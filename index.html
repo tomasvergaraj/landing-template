@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/png" href="/logo.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- ============================================
+         SEO — Editar con datos de tu empresa
+         ============================================ -->
+    <title>Tu Empresa | Soluciones Profesionales</title>
+    <meta name="description" content="Tu Empresa - Soluciones profesionales de alta calidad. Atención a empresas y particulares. Cotiza ahora." />
+    <meta name="keywords" content="servicios profesionales, empresa, cotización, calidad, soluciones" />
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="Tu Empresa | Soluciones Profesionales" />
+    <meta property="og:description" content="Soluciones confiables para proyectos de toda escala. Cotiza ahora." />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="/og-image.jpg" />
+    <meta property="og:url" content="https://tuempresa.cl" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Tu Empresa | Soluciones Profesionales" />
+    <meta name="twitter:description" content="Soluciones confiables para proyectos de toda escala." />
+
+    <!-- Canonical -->
+    <link rel="canonical" href="https://tuempresa.cl" />
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+
+    <!-- Prevenir FOUC de dark mode -->
+    <script>
+      (function() {
+        const saved = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        const theme = saved || (prefersDark ? 'dark' : 'light');
+        document.documentElement.setAttribute('data-theme', theme);
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>

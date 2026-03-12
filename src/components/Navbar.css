@@ -1,0 +1,227 @@
+.navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  padding: 16px 0;
+  transition: all var(--transition-base);
+}
+
+.navbar--scrolled {
+  background: var(--overlay-strong);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.navbar__inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.navbar__logo img {
+  height: 50px;
+  width: auto;
+  transition: height var(--transition-base);
+}
+
+.navbar--scrolled .navbar__logo img {
+  height: 42px;
+}
+
+.navbar__logo-text {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--text);
+  letter-spacing: -0.5px;
+}
+
+.navbar__logo-text span {
+  color: var(--accent);
+}
+
+.navbar__links {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.navbar__link {
+  font-family: var(--font-display);
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  padding: 8px 14px;
+  border-radius: 6px;
+  transition: all var(--transition-fast);
+  position: relative;
+}
+
+.navbar__link::after {
+  content: '';
+  position: absolute;
+  bottom: 4px;
+  left: 14px;
+  right: 14px;
+  height: 2px;
+  background: var(--accent);
+  transform: scaleX(0);
+  transition: transform var(--transition-base);
+  transform-origin: left;
+}
+
+.navbar__link:hover {
+  color: var(--text);
+}
+
+.navbar__link:hover::after {
+  transform: scaleX(1);
+}
+
+.navbar__actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.navbar__theme-toggle {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--accent-subtle);
+  border: 1px solid var(--accent-border);
+  color: var(--accent);
+  transition: all var(--transition-fast);
+  cursor: pointer;
+}
+
+.navbar__theme-toggle:hover {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+  transform: scale(1.05);
+}
+
+.navbar__phone {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  transition: all var(--transition-fast);
+}
+
+.navbar__phone:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.navbar__right-mobile {
+  display: none;
+  align-items: center;
+  gap: 8px;
+}
+
+.navbar__hamburger {
+  display: none;
+  background: none;
+  color: var(--text);
+  padding: 8px;
+  z-index: 1001;
+}
+
+.navbar__mobile-actions {
+  display: none;
+}
+
+.navbar__backdrop {
+  display: none;
+}
+
+/* Mobile */
+@media (max-width: 1024px) {
+  .navbar__links {
+    position: fixed;
+    top: 0;
+    right: -100%;
+    width: 320px;
+    height: 100vh;
+    background: var(--bg-soft);
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 80px 40px 40px;
+    gap: 4px;
+    transition: right var(--transition-slow);
+    border-left: 1px solid var(--border);
+    z-index: 1000;
+  }
+
+  .navbar__links--open {
+    right: 0;
+  }
+
+  .navbar__link {
+    font-size: 1.05rem;
+    padding: 14px 0;
+    width: 100%;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .navbar__link::after {
+    display: none;
+  }
+
+  .navbar__actions {
+    display: none;
+  }
+
+  .navbar__right-mobile {
+    display: flex;
+  }
+
+  .navbar__hamburger {
+    display: block;
+  }
+
+  .navbar__mobile-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+    margin-top: 32px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+  }
+
+  .navbar__mobile-actions .btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .navbar__backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+  }
+}
+
+@media (max-width: 480px) {
+  .navbar__links {
+    width: 100%;
+  }
+}
