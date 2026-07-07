@@ -1,0 +1,204 @@
+---
+import { Icon } from 'astro-icon/components';
+import { TESTIMONIALS } from '../config';
+
+const { eyebrow, title, subtitle, featured, items } = TESTIMONIALS;
+
+// Colores rotativos para los avatares (toques playful)
+const avatarVariants = ['violet', 'blue', 'volt'];
+---
+
+<section id="testimonios" class="tst section" aria-labelledby="tst-title">
+  <div class="container">
+    <!-- Encabezado centrado -->
+    <div class="section-head section-head--center reveal">
+      <span class="eyebrow eyebrow--blue">{eyebrow}</span>
+      <h2 id="tst-title" class="h2 tst__title">{title}</h2>
+      <p class="lead">{subtitle}</p>
+    </div>
+
+    <!-- Testimonio destacado (gran cita) -->
+    <figure class="tst__featured card card--violet reveal" style="--reveal-delay:.06s">
+      <span class="tst__quote-glyph" aria-hidden="true">
+        <Icon name="lucide:quote" />
+      </span>
+
+      <div class="tst__stars tst__stars--lg" role="img" aria-label="5 de 5 estrellas">
+        {Array.from({ length: 5 }).map(() => (
+          <Icon name="lucide:star" class="tst__star" />
+        ))}
+      </div>
+
+      <blockquote class="tst__featured-quote">
+        {featured.quote}
+      </blockquote>
+
+      <figcaption class="tst__featured-meta">
+        <span class="tst__featured-author">{featured.author}</span>
+        <span class="text-soft">{featured.role} · {featured.company}</span>
+      </figcaption>
+    </figure>
+
+    <!-- Testimonios secundarios -->
+    <ul class="tst__grid grid grid-3">
+      {items.map((t, i) => (
+        <li class="tst__card card card--hover reveal-op" style={`--reveal-delay:${0.12 + i * 0.08}s`}>
+          <div class="tst__stars" role="img" aria-label={`${t.rating} de 5 estrellas`}>
+            {Array.from({ length: t.rating }).map(() => (
+              <Icon name="lucide:star" class="tst__star" />
+            ))}
+          </div>
+
+          <blockquote class="tst__card-text">{t.text}</blockquote>
+
+          <div class="tst__author">
+            <span class={`tst__avatar tst__avatar--${avatarVariants[i % avatarVariants.length]}`} aria-hidden="true">
+              {t.author.charAt(0)}
+            </span>
+            <span class="tst__author-info">
+              <span class="tst__author-name">{t.author}</span>
+              <span class="text-soft tst__author-role">{t.role}</span>
+            </span>
+          </div>
+        </li>
+      ))}
+    </ul>
+  </div>
+</section>
+
+<style>
+  .tst__title { margin-top: 18px; }
+  .section-head--center .lead { margin-top: 18px; }
+
+  /* ── Estrellas (color volt) ─────────────────────────────── */
+  .tst__stars { display: inline-flex; gap: 4px; }
+  .tst__star {
+    width: 18px; height: 18px;
+    color: var(--volt);
+    fill: var(--volt);
+  }
+  .tst__stars--lg .tst__star { width: 22px; height: 22px; }
+  /* En tarjetas blancas, el volt queda muy tenue: usamos un ámbar legible */
+  .tst__card .tst__star { color: #f4b800; fill: #f4b800; }
+
+  /* ── Bloque destacado (gran cita) ───────────────────────── */
+  .tst__featured {
+    position: relative;
+    overflow: hidden;
+    padding: clamp(32px, 5vw, 56px);
+    border-radius: var(--r-2xl);
+    max-width: 940px;
+    margin: 0 auto;
+    box-shadow: var(--shadow-violet);
+    rotate: -0.8deg;
+  }
+
+  .tst__quote-glyph {
+    position: absolute;
+    top: clamp(8px, 2vw, 20px);
+    right: clamp(16px, 3vw, 36px);
+    color: rgba(255, 255, 255, 0.16);
+    pointer-events: none;
+  }
+  .tst__quote-glyph :global(svg) {
+    width: clamp(90px, 14vw, 150px);
+    height: clamp(90px, 14vw, 150px);
+  }
+
+  .tst__featured .tst__stars { margin-bottom: 22px; position: relative; z-index: 1; }
+
+  .tst__featured-quote {
+    position: relative;
+    z-index: 1;
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: clamp(1.6rem, 3vw, 2.4rem);
+    line-height: 1.18;
+    letter-spacing: -0.035em;
+    color: var(--white);
+    max-width: 22ch;
+  }
+
+  .tst__featured-meta {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin-top: clamp(24px, 4vw, 36px);
+    font-size: 0.98rem;
+  }
+  .tst__featured-author {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 1.15rem;
+    letter-spacing: -0.02em;
+    color: var(--white);
+  }
+
+  /* ── Rejilla de testimonios secundarios ─────────────────── */
+  .tst__grid { margin-top: clamp(24px, 4vw, 40px); }
+
+  .tst__card {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+  .tst__card:nth-child(2) { rotate: 0.8deg; }
+
+  .tst__card-text {
+    font-size: 1.02rem;
+    line-height: 1.55;
+    color: var(--ink);
+    letter-spacing: -0.01em;
+    flex: 1;
+  }
+
+  /* ── Fila de autor + avatar ─────────────────────────────── */
+  .tst__author {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    padding-top: 18px;
+    border-top: 1px solid var(--border);
+  }
+  .tst__avatar {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 46px; height: 46px;
+    border-radius: 50%;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 1.15rem;
+    letter-spacing: -0.02em;
+    color: var(--white);
+    box-shadow: var(--shadow-xs);
+  }
+  .tst__avatar--violet { background: var(--violet); }
+  .tst__avatar--blue { background: var(--blue); color: var(--ink); }
+  .tst__avatar--volt { background: var(--volt); color: var(--ink); }
+
+  .tst__author-info { display: flex; flex-direction: column; line-height: 1.25; }
+  .tst__author-name {
+    font-family: var(--font-display);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+  }
+  .tst__author-role { font-size: 0.85rem; }
+
+  /* ── Responsive ─────────────────────────────────────────── */
+  @media (max-width: 960px) {
+    .tst__featured-quote { max-width: none; }
+  }
+  @media (max-width: 620px) {
+    .tst__featured, .tst__card:nth-child(2) { rotate: 0deg; }
+    .tst__featured-quote { font-size: clamp(1.4rem, 6vw, 1.8rem); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .tst__featured, .tst__card { rotate: 0deg; }
+  }
+</style>

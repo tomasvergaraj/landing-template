@@ -1,0 +1,186 @@
+---
+import { Icon } from 'astro-icon/components';
+import { SITE, NAV_LINKS, CONTACT, waLink, telLink } from '../config';
+import WhatsAppIcon from './WhatsAppIcon.astro';
+---
+
+<header class="nav" id="nav" data-nav>
+  <div class="container">
+    <div class="nav__bar">
+      <a href="#top" class="nav__logo" aria-label={`${SITE.companyName} — inicio`}>
+        <span class="nav__logo-mark" aria-hidden="true"></span>
+        {SITE.brandShort}
+      </a>
+
+      <nav class="nav__links" aria-label="Principal">
+        {NAV_LINKS.map((l) => (
+          <a href={l.href} class="nav__link">{l.label}</a>
+        ))}
+      </nav>
+
+      <div class="nav__actions">
+        <a href={telLink()} class="nav__phone" aria-label="Llamar">
+          <Icon name="lucide:phone" />
+        </a>
+        <a href={waLink()} class="btn btn--dark btn--sm" target="_blank" rel="noopener">
+          Cotizar ahora
+        </a>
+        <button class="nav__burger" aria-label="Abrir menú" aria-expanded="false" data-burger>
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Menú móvil -->
+  <div class="nav__mobile" data-mobile hidden>
+    <nav class="nav__mobile-links" aria-label="Menú móvil">
+      {NAV_LINKS.map((l) => (
+        <a href={l.href} class="nav__mobile-link" data-close>{l.label}</a>
+      ))}
+    </nav>
+    <div class="nav__mobile-actions">
+      <a href={waLink()} class="btn btn--primary" target="_blank" rel="noopener" data-close>
+        <WhatsAppIcon size={18} /> WhatsApp
+      </a>
+      <a href={telLink()} class="btn btn--ghost" data-close>
+        <Icon name="lucide:phone" /> {CONTACT.phone}
+      </a>
+    </div>
+  </div>
+</header>
+
+<script is:inline>
+  (() => {
+    const nav = document.querySelector('[data-nav]');
+    const burger = document.querySelector('[data-burger]');
+    const mobile = document.querySelector('[data-mobile]');
+    if (!nav) return;
+
+    // Sombra/estado al hacer scroll
+    const onScroll = () => nav.classList.toggle('is-scrolled', window.scrollY > 20);
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+
+    // Menú móvil
+    const setOpen = (open) => {
+      nav.classList.toggle('is-open', open);
+      burger?.setAttribute('aria-expanded', String(open));
+      if (mobile) mobile.hidden = !open;
+      document.body.style.overflow = open ? 'hidden' : '';
+    };
+    burger?.addEventListener('click', () => setOpen(!nav.classList.contains('is-open')));
+    document.querySelectorAll('[data-close]').forEach((el) =>
+      el.addEventListener('click', () => setOpen(false))
+    );
+  })();
+</script>
+
+<style>
+  .nav {
+    position: fixed;
+    inset: 0 0 auto 0;
+    z-index: 100;
+    padding-top: 16px;
+    transition: padding var(--t-base);
+  }
+
+  .nav__bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 10px 10px 10px 22px;
+    border-radius: var(--r-pill);
+    background: rgba(255, 255, 255, 0.72);
+    backdrop-filter: blur(16px) saturate(150%);
+    -webkit-backdrop-filter: blur(16px) saturate(150%);
+    border: 1px solid rgba(255, 255, 255, 0.7);
+    box-shadow: var(--shadow-xs);
+    transition: box-shadow var(--t-base), background var(--t-base);
+  }
+  .nav.is-scrolled .nav__bar { box-shadow: var(--shadow-md); background: rgba(255, 255, 255, 0.86); }
+
+  .nav__logo {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 1.22rem;
+    letter-spacing: -0.04em;
+    color: var(--ink);
+  }
+  .nav__logo-mark {
+    width: 22px; height: 22px; border-radius: 8px;
+    background: var(--violet);
+    box-shadow: inset 0 0 0 4px rgba(255,255,255,0.35);
+    rotate: -8deg;
+  }
+
+  .nav__links { display: flex; align-items: center; gap: 4px; }
+  .nav__link {
+    padding: 9px 15px;
+    border-radius: var(--r-pill);
+    font-family: var(--font-display);
+    font-size: 0.95rem;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    color: var(--slate);
+    transition: color var(--t-fast), background var(--t-fast);
+  }
+  .nav__link:hover { color: var(--ink); background: rgba(25,23,28,0.05); }
+
+  .nav__actions { display: flex; align-items: center; gap: 10px; }
+  .nav__phone {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 42px; height: 42px; border-radius: 50%;
+    color: var(--ink); border: 1px solid var(--border); background: var(--white);
+    transition: transform var(--t-fast), box-shadow var(--t-fast);
+  }
+  .nav__phone :global(svg) { width: 18px; height: 18px; }
+  .nav__phone:hover { transform: translateY(-2px); box-shadow: var(--shadow-sm); }
+
+  .nav__burger {
+    display: none;
+    width: 44px; height: 44px; border-radius: 50%;
+    background: var(--ink);
+    align-items: center; justify-content: center;
+    flex-direction: column; gap: 4px;
+  }
+  .nav__burger span { width: 18px; height: 2px; border-radius: 2px; background: var(--white); transition: transform var(--t-base), opacity var(--t-base); }
+  .nav.is-open .nav__burger span:nth-child(1) { transform: translateY(6px) rotate(45deg); }
+  .nav.is-open .nav__burger span:nth-child(2) { opacity: 0; }
+  .nav.is-open .nav__burger span:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
+
+  .nav__mobile {
+    margin: 14px var(--gutter) 0;
+    padding: 20px;
+    border-radius: var(--r-xl);
+    background: var(--white);
+    box-shadow: var(--shadow-lg);
+    border: 1px solid var(--border);
+  }
+  .nav__mobile-links { display: flex; flex-direction: column; }
+  .nav__mobile-link {
+    padding: 14px 8px;
+    font-family: var(--font-display);
+    font-size: 1.15rem;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+    border-bottom: 1px solid var(--border);
+  }
+  .nav__mobile-link:last-child { border-bottom: none; }
+  .nav__mobile-actions { display: grid; gap: 10px; margin-top: 16px; }
+  .nav__mobile-actions .btn { width: 100%; }
+
+  @media (max-width: 900px) {
+    .nav__links, .nav__phone { display: none; }
+    .nav__actions .btn--dark { display: none; }
+    .nav__burger { display: inline-flex; }
+  }
+  @media (min-width: 901px) {
+    .nav__mobile { display: none !important; }
+  }
+</style>

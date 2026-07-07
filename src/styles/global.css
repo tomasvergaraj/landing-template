@@ -1,339 +1,516 @@
-/* ============================================
-   LANDING TEMPLATE - GLOBAL STYLES
-   ============================================
-   Tema dark/light controlado por [data-theme]
-   Color de acento: edita --accent-h para cambiar
-   ============================================ */
+/* ============================================================
+   LANDING TEMPLATE · Estilo "Jitter" (playful / Swiss precision)
+   Un solo lugar para la identidad visual. Cambia los tokens de
+   :root y toda la landing se actualiza.
+   ============================================================ */
 
 :root {
-  /* ── Accent Color (cambia el hue para otro color) ── */
-  --accent-h: 210;   /* 210=azul, 150=verde, 30=naranja, 350=rojo, 270=violeta, 45=dorado */
-  --accent-s: 90%;
-  --accent-l: 56%;
+  /* ── Paleta ──────────────────────────────────────────────
+     Lienzo claro y acolchado con el VIOLETA como chispa de marca
+     y azul eléctrico + "volt" (amarillo-verde) como acentos.    */
+  --off-white: #f2f1f3;   /* fondo de página */
+  --white:     #ffffff;   /* superficies de tarjeta */
+  --ink:       #19171c;   /* texto principal (casi negro) */
+  --slate:     #6e6e73;   /* texto secundario */
+  --hairline:  #e5e4e7;   /* bordes y divisores */
+  --mist:      #f7f6f8;   /* superficie recesada */
 
-  --accent: hsl(var(--accent-h), var(--accent-s), var(--accent-l));
-  --accent-light: hsl(var(--accent-h), var(--accent-s), 68%);
-  --accent-dark: hsl(var(--accent-h), var(--accent-s), 42%);
-  --accent-glow: hsla(var(--accent-h), var(--accent-s), var(--accent-l), 0.15);
-  --accent-subtle: hsla(var(--accent-h), var(--accent-s), var(--accent-l), 0.08);
-  --accent-border: hsla(var(--accent-h), var(--accent-s), var(--accent-l), 0.2);
+  --violet:      #7a40ed; /* marca */
+  --violet-ink:  #3d1f78; /* violeta profundo (texto sobre lila) */
+  --plum:        #17082c; /* casi negro violáceo */
+  --lilac:       #a981ff;
+  --lavender:    #cab3f8;
+  --sky:         #e6f4ff;
+  --ice:         #a9dbff;
+  --blue:        #00b2ff; /* azul eléctrico */
+  --volt:        #f5ff63; /* amarillo-verde */
+  --coral:       #ff6b57; /* acento cálido puntual */
 
-  /* ── Typography ── */
-  --font-display: 'Syne', 'Impact', sans-serif;
-  --font-body: 'Plus Jakarta Sans', 'Helvetica Neue', sans-serif;
+  /* Roles semánticos */
+  --bg: var(--off-white);
+  --text: var(--ink);
+  --text-soft: var(--slate);
+  --brand: var(--violet);
+  --border: var(--hairline);
 
-  /* ── Spacing ── */
-  --section-padding: 100px 0;
-  --container-width: 1200px;
-  --container-padding: 0 24px;
+  /* ── Tipografía ──────────────────────────────────────────── */
+  --font-display: 'Space Grotesk', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-body: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
 
-  /* ── Transitions ── */
-  --transition-fast: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  --transition-base: 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-  --transition-slow: 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  /* ── Radios (todo tipo píldora / cojín) ──────────────────── */
+  --r-pill: 999px;
+  --r-2xl: 40px;
+  --r-xl: 32px;
+  --r-lg: 26px;
+  --r-md: 20px;
+  --r-sm: 14px;
 
-  /* ── Shadows ── */
-  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.08);
-  --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.12);
-  --shadow-lg: 0 8px 40px rgba(0, 0, 0, 0.16);
-  --shadow-accent: 0 4px 30px var(--accent-glow);
+  /* ── Sombras difusas de varias capas (flotante/acolchado) ── */
+  --shadow-xs:
+    0 1px 2px rgba(25, 23, 28, 0.04),
+    0 3px 8px rgba(25, 23, 28, 0.05);
+  --shadow-sm:
+    0 2px 4px rgba(25, 23, 28, 0.03),
+    0 6px 14px rgba(25, 23, 28, 0.05),
+    0 14px 30px rgba(25, 23, 28, 0.05);
+  --shadow-md:
+    0 2px 4px rgba(25, 23, 28, 0.03),
+    0 10px 24px rgba(25, 23, 28, 0.06),
+    0 30px 60px rgba(25, 23, 28, 0.08);
+  --shadow-lg:
+    0 4px 8px rgba(25, 23, 28, 0.04),
+    0 18px 40px rgba(25, 23, 28, 0.08),
+    0 48px 110px rgba(25, 23, 28, 0.12);
+  --shadow-violet:
+    0 12px 30px rgba(122, 64, 237, 0.28),
+    0 30px 70px rgba(122, 64, 237, 0.20);
+
+  /* ── Layout ──────────────────────────────────────────────── */
+  --container: 1200px;
+  --container-wide: 1320px;
+  --gutter: 24px;
+  --section-y: clamp(64px, 9vw, 120px);
+
+  /* ── Movimiento ──────────────────────────────────────────── */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --t-fast: 0.18s var(--ease-out);
+  --t-base: 0.32s var(--ease-out);
+  --t-slow: 0.6s var(--ease-out);
 }
 
-/* ─── DARK THEME ─────────────────────────────── */
-[data-theme="dark"] {
-  --bg: #0A0A0F;
-  --bg-soft: #121218;
-  --bg-card: #1A1A22;
-  --border: #2A2A36;
-  --text: #F0F0F5;
-  --text-secondary: #B8B8CC;
-  --text-muted: #9A9AB0;
-  --text-dim: #5A5A70;
-  --overlay-strong: rgba(10, 10, 15, 0.92);
-  --overlay-light: rgba(10, 10, 15, 0.5);
-  --card-gradient: linear-gradient(135deg, #1A1A22 0%, rgba(26, 26, 34, 0.5) 100%);
-  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.4);
-  --shadow-lg: 0 8px 40px rgba(0, 0, 0, 0.5);
-}
-
-/* ─── LIGHT THEME ────────────────────────────── */
-[data-theme="light"] {
-  --bg: #FAFBFE;
-  --bg-soft: #F0F2F8;
-  --bg-card: #FFFFFF;
-  --border: #E0E2EC;
-  --text: #1A1A2E;
-  --text-secondary: #44445A;
-  --text-muted: #6B6B80;
-  --text-dim: #9A9AB0;
-  --overlay-strong: rgba(250, 251, 254, 0.95);
-  --overlay-light: rgba(250, 251, 254, 0.6);
-  --card-gradient: linear-gradient(135deg, #FFFFFF 0%, #F8F9FC 100%);
-}
-
-/* ─── Reset ──────────────────────────────────── */
-*, *::before, *::after {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
+/* ─── Reset ─────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 html {
-  scroll-behavior: smooth;
   font-size: 16px;
+  -webkit-text-size-adjust: 100%;
+  scroll-behavior: smooth;
+  scroll-padding-top: 96px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
 body {
   font-family: var(--font-body);
-  background-color: var(--bg);
+  background: var(--bg);
   color: var(--text);
   line-height: 1.6;
   overflow-x: hidden;
-  transition: background-color 0.4s ease, color 0.4s ease;
+  text-rendering: optimizeLegibility;
 }
 
-img {
-  max-width: 100%;
-  height: auto;
-  display: block;
-}
+img, svg, video { display: block; max-width: 100%; }
+img { height: auto; }
+a { color: inherit; text-decoration: none; }
+ul, ol { list-style: none; }
+button { font: inherit; color: inherit; border: none; background: none; cursor: pointer; }
+input, textarea, select { font: inherit; }
+:focus-visible { outline: 3px solid var(--violet); outline-offset: 3px; border-radius: 4px; }
 
-a {
-  text-decoration: none;
-  color: inherit;
-  transition: color var(--transition-fast);
-}
+::selection { background: var(--volt); color: var(--ink); }
 
-button {
-  cursor: pointer;
-  border: none;
-  outline: none;
-  font-family: var(--font-body);
-}
-
-ul, ol {
-  list-style: none;
-}
-
-/* ─── Container ──────────────────────────────── */
-.container {
-  max-width: var(--container-width);
-  margin: 0 auto;
-  padding: var(--container-padding);
-  width: 100%;
-}
-
-/* ─── Section Base ───────────────────────────── */
-.section {
-  padding: var(--section-padding);
-  position: relative;
-  background: var(--bg);
-  transition: background-color 0.4s ease;
-}
-
-.section--alt {
-  background: var(--bg-soft);
-}
-
-/* ─── Section Header ─────────────────────────── */
-.section-header {
-  text-align: center;
-  margin-bottom: 64px;
-}
-
-.section-label {
+/* ─── Tipografía base ───────────────────────────────────────── */
+.display, h1, h2, h3, h4 {
   font-family: var(--font-display);
-  font-size: 0.82rem;
   font-weight: 700;
-  letter-spacing: 4px;
-  text-transform: uppercase;
-  color: var(--accent);
-  margin-bottom: 14px;
-  display: block;
+  line-height: 0.98;
+  letter-spacing: -0.035em;
+  color: var(--ink);
 }
 
-.section-title {
-  font-family: var(--font-display);
-  font-size: clamp(2.2rem, 5vw, 3.4rem);
-  color: var(--text);
-  line-height: 1.08;
-  letter-spacing: -0.5px;
-  margin-bottom: 20px;
-  font-weight: 800;
+.display {
+  font-size: clamp(2.9rem, 7vw, 6rem);
+  line-height: 0.92;
+  letter-spacing: -0.045em;
 }
 
-.section-subtitle {
+.h1 { font-size: clamp(2.4rem, 5.2vw, 4rem); letter-spacing: -0.04em; line-height: 0.96; }
+.h2 { font-size: clamp(2rem, 4.2vw, 3.2rem); letter-spacing: -0.038em; }
+.h3 { font-size: clamp(1.3rem, 2.2vw, 1.7rem); letter-spacing: -0.03em; line-height: 1.05; }
+
+.lead {
   font-family: var(--font-body);
-  font-size: 1.05rem;
-  color: var(--text-muted);
-  max-width: 620px;
-  margin: 0 auto;
-  line-height: 1.75;
-  font-weight: 300;
+  font-size: clamp(1.05rem, 1.5vw, 1.3rem);
+  line-height: 1.55;
+  color: var(--slate);
+  font-weight: 400;
+  letter-spacing: -0.01em;
 }
 
-/* ─── Buttons ────────────────────────────────── */
+.text-soft { color: var(--slate); }
+.text-brand { color: var(--violet); }
+
+/* ─── Layout helpers ────────────────────────────────────────── */
+.container {
+  width: 100%;
+  max-width: var(--container);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+.container--wide { max-width: var(--container-wide); }
+
+.section { padding-block: var(--section-y); position: relative; }
+
+.section-head { max-width: 720px; margin-bottom: clamp(40px, 5vw, 64px); }
+.section-head--center { margin-inline: auto; text-align: center; }
+
+/* Etiqueta / eyebrow tipo píldora */
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 16px 7px 14px;
+  border-radius: var(--r-pill);
+  background: var(--white);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-xs);
+  font-family: var(--font-display);
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
+.eyebrow::before {
+  content: '';
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--violet);
+}
+.eyebrow--blue::before { background: var(--blue); }
+.eyebrow--volt::before { background: #cdd63a; }
+
+/* Palabra resaltada con "marcador" (playful) */
+.mark {
+  position: relative;
+  white-space: nowrap;
+  padding: 0 0.08em;
+  color: var(--ink);
+  z-index: 0;
+}
+.mark::after {
+  content: '';
+  position: absolute;
+  left: -0.04em; right: -0.04em;
+  bottom: 0.06em;
+  height: 0.42em;
+  background: var(--volt);
+  border-radius: 4px;
+  z-index: -1;
+  transform: rotate(-1.2deg);
+}
+.mark--violet { color: var(--white); }
+.mark--violet::after { background: var(--violet); height: 1.05em; bottom: -0.05em; transform: rotate(-1deg); border-radius: 10px; }
+.mark--blue::after { background: var(--ice); }
+.mark--underline::after { height: 0.18em; bottom: 0.02em; border-radius: 999px; }
+
+/* Texto en color de marca (sin marcador) */
+.ink-violet { color: var(--violet); }
+.ink-blue { color: var(--blue); }
+
+/* ─── Botones (píldora, cojín) ──────────────────────────────── */
 .btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
-  padding: 16px 36px;
-  border-radius: 8px;
+  gap: 9px;
+  padding: 15px 26px;
+  border-radius: var(--r-pill);
   font-family: var(--font-display);
-  font-size: 0.92rem;
+  font-size: 0.98rem;
   font-weight: 600;
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
-  transition: all var(--transition-base);
-  position: relative;
-  overflow: hidden;
+  letter-spacing: -0.01em;
   white-space: nowrap;
+  cursor: pointer;
+  transition: transform var(--t-base), box-shadow var(--t-base), background var(--t-fast), color var(--t-fast);
+  will-change: transform;
+}
+.btn :global(svg), .btn svg { width: 1.15em; height: 1.15em; }
+.btn:hover { transform: translateY(-3px); }
+.btn:active { transform: translateY(-1px) scale(0.99); }
+
+.btn--dark { background: var(--ink); color: var(--white); box-shadow: var(--shadow-sm); }
+.btn--dark:hover { box-shadow: var(--shadow-md); background: #000; }
+
+.btn--primary { background: var(--violet); color: var(--white); box-shadow: var(--shadow-violet); }
+.btn--primary:hover { background: #6a2fe0; }
+
+.btn--white { background: var(--white); color: var(--ink); box-shadow: var(--shadow-sm); }
+.btn--white:hover { box-shadow: var(--shadow-md); }
+
+.btn--ghost { background: transparent; color: var(--ink); border: 1.5px solid var(--border); }
+.btn--ghost:hover { border-color: var(--ink); background: var(--white); }
+
+.btn--volt { background: var(--volt); color: var(--ink); box-shadow: var(--shadow-sm); }
+.btn--volt:hover { box-shadow: var(--shadow-md); }
+
+.btn--lg { padding: 18px 34px; font-size: 1.08rem; }
+.btn--sm { padding: 11px 18px; font-size: 0.9rem; }
+
+/* ─── Tarjetas acolchadas ───────────────────────────────────── */
+.card {
+  background: var(--white);
+  border-radius: var(--r-2xl);
+  padding: 32px;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  transition: transform var(--t-base), box-shadow var(--t-base), opacity 0.5s var(--ease-out);
+}
+.card--hover:hover { transform: translateY(-6px); box-shadow: var(--shadow-lg); }
+
+/* Bloques de color saturado (los toques playful) */
+.card--violet { background: var(--violet); color: var(--white); }
+.card--plum   { background: var(--plum); color: #efe7ff; }
+.card--blue   { background: var(--blue); color: var(--ink); }
+.card--volt   { background: var(--volt); color: var(--ink); }
+.card--lilac  { background: var(--lavender); color: var(--violet-ink); }
+.card--sky    { background: var(--sky); color: var(--ink); }
+.card--ink    { background: var(--ink); color: var(--white); }
+.card--violet .text-soft,
+.card--plum .text-soft,
+.card--ink .text-soft { color: rgba(255,255,255,0.72); }
+
+/* Chip de icono */
+.icon-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px; height: 52px;
+  border-radius: var(--r-md);
+  background: var(--mist);
+  color: var(--violet);
+  border: 1px solid var(--border);
+}
+.icon-chip :global(svg), .icon-chip svg { width: 26px; height: 26px; }
+.icon-chip--violet { background: var(--violet); color: var(--white); border-color: transparent; }
+.icon-chip--blue { background: var(--sky); color: var(--blue); border-color: transparent; }
+.icon-chip--volt { background: var(--volt); color: var(--ink); border-color: transparent; }
+.icon-chip--white { background: rgba(255,255,255,0.16); color: var(--white); border-color: rgba(255,255,255,0.2); }
+
+/* Píldora/tag pequeña */
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 13px;
+  border-radius: var(--r-pill);
+  font-family: var(--font-display);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  background: var(--mist);
+  color: var(--ink);
+  border: 1px solid var(--border);
 }
 
-.btn::before {
+/* ─── Revelado al hacer scroll ──────────────────────────────── */
+.reveal {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity 0.7s var(--ease-out), transform 0.7s var(--ease-out);
+  transition-delay: var(--reveal-delay, 0s);
+}
+.reveal.is-visible { opacity: 1; transform: none; }
+
+/* ─── Marquesina (logos) ────────────────────────────────────── */
+@keyframes marquee-x {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+/* ─── Grids utilitarios ─────────────────────────────────────── */
+.grid { display: grid; gap: 20px; }
+.grid-2 { grid-template-columns: repeat(2, 1fr); }
+.grid-3 { grid-template-columns: repeat(3, 1fr); }
+.grid-4 { grid-template-columns: repeat(4, 1fr); }
+
+@media (max-width: 960px) {
+  .grid-3, .grid-4 { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 620px) {
+  .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+}
+
+/* ============================================================
+   CAPA DE MOVIMIENTO HUD · inspirada en "GT-Planar"
+   (cabina a velocidad warp): timing preciso/snappy, etiquetas
+   técnicas mono, corchetes de esquina, anillo HUD y scanline.
+   Se combina con la estética Jitter sin reemplazarla.
+   ============================================================ */
+:root {
+  --font-mono: 'Space Mono', ui-monospace, 'SFMono-Regular', 'Menlo', monospace;
+  --ease-snappy: cubic-bezier(0.6, 0, 0.2, 1);
+  --t-snap: 0.16s var(--ease-snappy);
+  --hud-ring: rgba(122, 64, 237, 0.5);
+  /* colores de acento tipo instrumento (GT-Planar) */
+  --reactor: #d8c400;   /* amarillo reactor legible sobre claro */
+  --plasma:  #00b877;   /* verde plasma legible sobre claro */
+}
+
+/* Etiqueta técnica monoespaciada (instrumento) */
+.mono {
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.22em;
+  font-size: 0.72rem;
+  font-weight: 400;
+  color: var(--slate);
+}
+.mono--cursor::after {
+  content: '';
+  display: inline-block;
+  width: 0.58em;
+  height: 1em;
+  margin-left: 0.35em;
+  translate: 0 0.14em;
+  background: currentColor;
+  animation: hud-blink 1.05s steps(1) infinite;
+}
+@keyframes hud-blink { 0%, 50% { opacity: 1; } 50.01%, 100% { opacity: 0; } }
+
+/* Chip/tag HUD con borde hairline + acento cromático */
+.hud-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 7px 14px;
+  border-radius: var(--r-pill);
+  border: 1px solid var(--border);
+  background: var(--white);
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  font-size: 0.72rem;
+  color: var(--ink);
+  box-shadow: var(--shadow-xs);
+}
+.hud-tag::before {
+  content: '';
+  width: 7px; height: 7px; border-radius: 2px;
+  background: var(--violet);
+  box-shadow: 0 0 0 3px rgba(122, 64, 237, 0.14);
+}
+.hud-tag--reactor::before { background: var(--reactor); box-shadow: 0 0 0 3px rgba(216,196,0,0.16); }
+.hud-tag--plasma::before  { background: var(--plasma);  box-shadow: 0 0 0 3px rgba(0,184,119,0.16); }
+
+/* Corchetes de esquina (retícula HUD) — decorativos */
+.hud-corners { position: relative; }
+.hud-corners::before,
+.hud-corners::after {
   content: '';
   position: absolute;
-  top: 0;
-  left: -100%;
+  width: 16px; height: 16px;
+  border: 2px solid var(--hud-corner, var(--violet));
+  opacity: 0.85;
+  pointer-events: none;
+  transition: width var(--t-snap), height var(--t-snap);
+}
+.hud-corners::before { top: 12px; left: 12px; border-right: 0; border-bottom: 0; border-top-left-radius: 4px; }
+.hud-corners::after  { bottom: 12px; right: 12px; border-left: 0; border-top: 0; border-bottom-right-radius: 4px; }
+.hud-corners:hover::before,
+.hud-corners:hover::after { width: 22px; height: 22px; }
+
+/* Anillo HUD nítido al pasar el cursor por tarjetas interactivas */
+.card { position: relative; }
+.card--hover { transition: transform var(--t-base), box-shadow var(--t-snap), opacity 0.5s var(--ease-out); }
+.card--hover:hover {
+  box-shadow: var(--shadow-lg), inset 0 0 0 1.5px var(--hud-ring);
+}
+/* En bloques de color oscuro, el anillo va en blanco */
+.card--violet, .card--blue, .card--plum, .card--ink { --hud-ring: rgba(255, 255, 255, 0.6); }
+
+/* Scanline sutil para paneles warp */
+.scanline { position: relative; overflow: hidden; }
+.scanline::after {
+  content: '';
+  position: absolute;
+  left: 0; right: 0; top: 0;
+  height: 38%;
+  background: linear-gradient(180deg, transparent, rgba(255, 255, 255, 0.05), transparent);
+  animation: hud-scan 7s linear infinite;
+  pointer-events: none;
+  z-index: 3;
+}
+@keyframes hud-scan { 0% { transform: translateY(-120%); } 100% { transform: translateY(360%); } }
+
+/* Lienzo warp (hiperespacio) a pantalla de sección */
+.warp-canvas {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
-  transition: left 0.5s;
+  display: block;
+  pointer-events: none;
 }
 
-.btn:hover::before {
-  left: 100%;
+/* ============================================================
+   PROFUNDIDAD 3D · scroll + hover
+   ============================================================ */
+
+/* ── Entrada 3D de secciones al hacer scroll ──────────────────
+   Cada sección "entra desde el espacio" (rotateX + profundidad)
+   ligada al scroll. Progressive enhancement: solo si el
+   navegador soporta scroll-linked animations. Si no, el
+   revelado por IntersectionObserver (.reveal) sigue actuando.  */
+@keyframes section-warp-in {
+  from { opacity: 0; transform: perspective(1500px) translateY(70px) translateZ(-300px) rotateX(7deg); }
+  to   { opacity: 1; transform: perspective(1500px) translateY(0) translateZ(0) rotateX(0); }
+}
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: view()) {
+    main > section:not(#top) {
+      animation: section-warp-in linear both;
+      animation-timeline: view();
+      animation-range: entry 6% entry 90%;
+      transform-origin: 50% 120%;
+      backface-visibility: hidden;
+    }
+  }
 }
 
-.btn-primary {
-  background: var(--accent);
-  color: #fff;
-  font-weight: 700;
+/* ── Inclinación 3D que sigue al cursor (tilt + brillo) ───────
+   El JS (data-tilt) escribe --tx/--ty (grados) y --gx/--gy (%). */
+.tilt3d {
+  position: relative;
+  transform: perspective(var(--tp, 900px)) rotateX(var(--ty, 0deg)) rotateY(var(--tx, 0deg)) translateZ(var(--tz, 0px));
+  transform-style: preserve-3d;
+  transition: transform 0.4s var(--ease-out), box-shadow 0.4s var(--ease-out), opacity 0.5s var(--ease-out);
+  will-change: transform;
 }
 
-.btn-primary:hover {
-  background: var(--accent-light);
-  box-shadow: var(--shadow-accent);
-  transform: translateY(-2px);
+/* Revelado por OPACIDAD (sin tocar transform): para tarjetas con
+   hover/tilt, donde .reveal (que usa transform) rompería el efecto. */
+.reveal-op { opacity: 0; }
+.reveal-op.is-visible { opacity: 1; }
+.tilt3d:hover {
+  --tz: 22px;
+  box-shadow: var(--shadow-lg), inset 0 0 0 1.5px var(--hud-ring);
 }
-
-.btn-outline {
-  background: transparent;
-  color: var(--text);
-  border: 2px solid var(--border);
-}
-
-.btn-outline:hover {
-  border-color: var(--accent);
-  color: var(--accent);
-  transform: translateY(-2px);
-}
-
-.btn-whatsapp {
-  background: #25D366;
-  color: #fff;
-  font-weight: 700;
-}
-
-.btn-whatsapp:hover {
-  background: #20BD5A;
-  box-shadow: 0 4px 20px rgba(37, 211, 102, 0.3);
-  transform: translateY(-2px);
-}
-
-.btn-sm {
-  padding: 10px 24px;
-  font-size: 0.82rem;
-}
-
-/* ─── Gold Accent Line ───────────────────────── */
-.accent-line {
-  width: 60px;
-  height: 3px;
-  background: var(--accent);
-  margin: 0 auto 20px;
-  border-radius: 2px;
-}
-
-/* ─── Animations ─────────────────────────────── */
-.fade-up {
+.tilt3d__glare {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
   opacity: 0;
-  transform: translateY(40px);
-  transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1),
-              transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: 2;
+  background: radial-gradient(240px circle at var(--gx, 50%) var(--gy, 0%), rgba(255, 255, 255, 0.4), transparent 60%);
+  mix-blend-mode: soft-light;
+  transition: opacity 0.4s var(--ease-out);
 }
+.tilt3d:hover .tilt3d__glare { opacity: 1; }
 
-.fade-up.visible {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-/* ─── Patterns ───────────────────────────────── */
-.pattern-overlay {
-  position: absolute;
-  inset: 0;
-  background-image: repeating-linear-gradient(
-    45deg,
-    transparent,
-    transparent 30px,
-    var(--accent-subtle) 30px,
-    var(--accent-subtle) 31px
-  );
-  pointer-events: none;
-}
-
-.noise-overlay {
-  position: absolute;
-  inset: 0;
-  opacity: 0.025;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  pointer-events: none;
-}
-
-/* ─── Scrollbar ──────────────────────────────── */
-::-webkit-scrollbar {
-  width: 8px;
-}
-
-::-webkit-scrollbar-track {
-  background: var(--bg);
-}
-
-::-webkit-scrollbar-thumb {
-  background: var(--border);
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: var(--accent-dark);
-}
-
-/* ─── Responsive ─────────────────────────────── */
-@media (max-width: 768px) {
-  :root {
-    --section-padding: 70px 0;
+/* ─── Accesibilidad: reducir movimiento ─────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
   }
-
-  .section-header {
-    margin-bottom: 48px;
-  }
-
-  .section-subtitle {
-    font-size: 1rem;
-  }
-
-  .btn {
-    padding: 14px 28px;
-    font-size: 0.88rem;
-  }
-}
-
-@media (max-width: 480px) {
-  :root {
-    --section-padding: 56px 0;
-  }
+  .reveal { opacity: 1; transform: none; }
+  .reveal-op { opacity: 1; }
+  .mono--cursor::after,
+  .scanline::after { animation: none; }
+  .scanline::after { display: none; }
+  .tilt3d { transform: none !important; }
+  .tilt3d__glare { display: none; }
 }

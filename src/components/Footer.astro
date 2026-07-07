@@ -1,0 +1,284 @@
+---
+import { Icon } from 'astro-icon/components';
+import { FOOTER, SITE, CONTACT, SOCIAL, waLink, telLink, mailLink } from '../config';
+import WhatsAppIcon from './WhatsAppIcon.astro';
+
+// Redes con icono de lucide (TikTok y WhatsApp se tratan aparte)
+const socials = [
+  { name: 'Instagram', href: SOCIAL.instagram, icon: 'instagram' },
+  { name: 'Facebook', href: SOCIAL.facebook, icon: 'facebook' },
+  { name: 'LinkedIn', href: SOCIAL.linkedin, icon: 'linkedin' },
+];
+
+// Datos de contacto: teléfono y correo son enlaces
+const contactItems = [
+  { icon: 'map-pin', text: CONTACT.address, href: null },
+  { icon: 'phone', text: CONTACT.phone, href: telLink() },
+  { icon: 'mail', text: CONTACT.email, href: mailLink() },
+  { icon: 'clock', text: CONTACT.schedule, href: null },
+];
+
+const year = new Date().getFullYear();
+---
+
+<footer class="footer" aria-labelledby="footer-brand">
+  <div class="container">
+    <div class="footer__grid">
+      <!-- Columna de marca -->
+      <div class="footer__brand reveal">
+        <a href="#top" class="footer__brand-top" id="footer-brand" aria-label={`${SITE.companyName} — inicio`}>
+          <span class="footer__logo-mark" aria-hidden="true"></span>
+          {SITE.brandShort}
+        </a>
+
+        <p class="footer__about text-soft">{FOOTER.about}</p>
+
+        <ul class="footer__social" aria-label="Redes sociales">
+          {socials.map((s) => (
+            <li>
+              <a
+                href={s.href}
+                class="footer__social-btn"
+                target="_blank"
+                rel="noopener"
+                aria-label={s.name}
+              >
+                <Icon name={`lucide:${s.icon}`} />
+              </a>
+            </li>
+          ))}
+          <li>
+            <a
+              href={SOCIAL.tiktok}
+              class="footer__social-btn"
+              target="_blank"
+              rel="noopener"
+              aria-label="TikTok"
+            >
+              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path d="M16.5 3c.24 1.53.8 2.86 1.9 3.94 1.1 1.08 2.55 1.6 4.1 1.7v3.9c-1.44-.05-2.86-.36-4.16-.98-.57-.27-1.1-.6-1.62-.95-.01 2.85.01 5.7-.02 8.55-.09 1.37-.55 2.73-1.4 3.85-1.35 1.83-3.6 2.98-5.86 3-1.4.06-2.79-.32-3.97-1.05-1.95-1.2-3.28-3.4-3.44-5.7-.02-.5-.02-1 0-1.48.28-2.9 2.63-5.38 5.5-5.82.53-.09 1.07-.1 1.6-.06.02 1.44 0 2.87 0 4.31-.66-.21-1.42-.15-2.02.23-.44.27-.77.68-.95 1.16-.15.34-.11.72-.1 1.08.15 1.53 1.7 2.72 3.2 2.5 1-.13 1.87-.9 2.13-1.87.08-.27.11-.55.11-.83V3h3.4z" />
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a
+              href={waLink()}
+              class="footer__social-btn footer__social-btn--wa"
+              target="_blank"
+              rel="noopener"
+              aria-label="WhatsApp"
+            >
+              <WhatsAppIcon size={18} />
+            </a>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Columnas de enlaces -->
+      {FOOTER.columns.map((col, i) => (
+        <nav class="footer__col reveal" style={`--reveal-delay:${0.06 + i * 0.06}s`} aria-label={col.title}>
+          <h2 class="footer__col-title">{col.title}</h2>
+          <ul class="footer__links">
+            {col.links.map((l) => (
+              <li><a href={l.href} class="footer__link">{l.label}</a></li>
+            ))}
+          </ul>
+        </nav>
+      ))}
+
+      <!-- Columna de contacto -->
+      <div class="footer__col footer__col--contact reveal" style="--reveal-delay:.18s">
+        <h2 class="footer__col-title">Contacto</h2>
+        <ul class="footer__contact">
+          {contactItems.map((c) => (
+            <li class="footer__contact-item">
+              <span class="footer__contact-ico" aria-hidden="true">
+                <Icon name={`lucide:${c.icon}`} />
+              </span>
+              {c.href
+                ? <a href={c.href}>{c.text}</a>
+                : <span>{c.text}</span>}
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+
+    <!-- Barra inferior -->
+    <div class="footer__bottom">
+      <p class="footer__copy">
+        © {year} {SITE.companyName}. Todos los derechos reservados.
+      </p>
+      <p class="footer__made">
+        Hecho con <span class="footer__heart" aria-hidden="true">♥</span> en Chile
+      </p>
+    </div>
+  </div>
+</footer>
+
+<style>
+  .footer {
+    border-top: 1px solid var(--border);
+    background: var(--off-white);
+    padding-top: clamp(56px, 7vw, 88px);
+  }
+
+  .footer__grid {
+    display: grid;
+    grid-template-columns: 1.7fr 1fr 1fr 1.4fr;
+    gap: clamp(32px, 4vw, 56px);
+    padding-bottom: clamp(40px, 5vw, 64px);
+  }
+
+  /* ── Columna de marca ── */
+  .footer__brand-top {
+    display: inline-flex;
+    align-items: center;
+    gap: 11px;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 1.32rem;
+    letter-spacing: -0.04em;
+    color: var(--ink);
+  }
+  .footer__logo-mark {
+    width: 26px;
+    height: 26px;
+    border-radius: 9px;
+    background: var(--violet);
+    box-shadow: inset 0 0 0 5px rgba(255, 255, 255, 0.35);
+    rotate: -8deg;
+    flex-shrink: 0;
+  }
+  .footer__about {
+    margin-top: 18px;
+    max-width: 320px;
+    font-size: 0.98rem;
+    line-height: 1.6;
+  }
+
+  .footer__social {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 26px;
+  }
+  .footer__social-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: var(--white);
+    border: 1px solid var(--border);
+    color: var(--ink);
+    box-shadow: var(--shadow-xs);
+    transition: transform var(--t-fast), box-shadow var(--t-fast),
+      background var(--t-fast), color var(--t-fast), border-color var(--t-fast);
+  }
+  .footer__social-btn :global(svg) { width: 19px; height: 19px; }
+  .footer__social-btn:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-sm);
+    color: var(--violet);
+    border-color: var(--lavender);
+  }
+  .footer__social-btn--wa:hover { color: #25d366; border-color: #a7ecc0; }
+
+  /* ── Columnas de enlaces ── */
+  .footer__col-title {
+    font-family: var(--font-display);
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--slate);
+    margin-bottom: 18px;
+  }
+  .footer__links { display: flex; flex-direction: column; gap: 11px; }
+  .footer__link {
+    display: inline-block;
+    width: fit-content;
+    font-size: 0.98rem;
+    color: var(--slate);
+    transition: color var(--t-fast), transform var(--t-fast);
+  }
+  .footer__link:hover { color: var(--violet); transform: translateX(3px); }
+
+  /* ── Columna de contacto ── */
+  .footer__contact { display: flex; flex-direction: column; gap: 15px; }
+  .footer__contact-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    font-size: 0.96rem;
+    line-height: 1.45;
+    color: var(--slate);
+  }
+  .footer__contact-item a {
+    color: var(--slate);
+    transition: color var(--t-fast);
+  }
+  .footer__contact-item a:hover { color: var(--violet); }
+  .footer__contact-ico {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 11px;
+    background: var(--mist);
+    border: 1px solid var(--border);
+    color: var(--violet);
+    margin-top: 1px;
+  }
+  .footer__contact-ico :global(svg) { width: 16px; height: 16px; }
+
+  /* ── Barra inferior ── */
+  .footer__bottom {
+    border-top: 1px solid var(--border);
+    padding-block: 26px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px 24px;
+    flex-wrap: wrap;
+  }
+  .footer__copy { font-size: 0.9rem; color: var(--slate); }
+  .footer__made {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--font-display);
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--slate);
+  }
+  .footer__heart { color: var(--coral); }
+
+  /* ── Responsive ── */
+  @media (max-width: 960px) {
+    .footer__grid {
+      grid-template-columns: 1fr 1fr;
+      gap: 40px 32px;
+    }
+    .footer__brand { grid-column: 1 / -1; }
+    .footer__col--contact { grid-column: 1 / -1; }
+  }
+  @media (max-width: 620px) {
+    .footer__grid { grid-template-columns: 1fr; }
+    .footer__about { max-width: none; }
+    .footer__bottom {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 8px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .footer__social-btn:hover,
+    .footer__link:hover { transform: none; }
+  }
+</style>

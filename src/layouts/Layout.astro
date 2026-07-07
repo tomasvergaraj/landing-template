@@ -1,0 +1,181 @@
+---
+import { SITE } from '../config';
+import '../styles/global.css';
+
+interface Props {
+  title?: string;
+  description?: string;
+  image?: string;
+}
+
+const {
+  title = `${SITE.companyName} · ${SITE.tagline}`,
+  description = `${SITE.companyName} — soluciones profesionales de alta calidad para empresas y particulares. ${SITE.slogan}. Cotiza ahora.`,
+  image = SITE.ogImage,
+} = Astro.props;
+
+const canonical = new URL(Astro.url.pathname, Astro.site ?? SITE.url).href;
+const ogImageUrl = new URL(image, Astro.site ?? SITE.url).href;
+
+// Datos estructurados (SEO enriquecido)
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'LocalBusiness',
+  name: SITE.companyName,
+  description,
+  url: SITE.url,
+  image: ogImageUrl,
+  telephone: '+56912345678',
+  email: 'contacto@tuempresa.cl',
+  address: {
+    '@type': 'PostalAddress',
+    streetAddress: 'Av. Principal 1234',
+    addressLocality: 'Ciudad',
+    addressRegion: 'Región',
+    addressCountry: 'CL',
+  },
+  sameAs: [
+    'https://www.instagram.com/tuempresa',
+    'https://www.facebook.com/tuempresa',
+    'https://www.linkedin.com/company/tuempresa',
+  ],
+};
+---
+
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/png" href="/logo.png" />
+    <meta name="generator" content={Astro.generator} />
+
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <meta name="theme-color" content="#f2f1f3" />
+    <link rel="canonical" href={canonical} />
+    <meta name="robots" content="index, follow" />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={SITE.companyName} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogImageUrl} />
+    <meta property="og:locale" content={SITE.locale} />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImageUrl} />
+
+    <!-- Fuentes -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&family=Inter:wght@400;500;600;700&display=swap"
+    />
+
+    <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+  </head>
+  <body>
+    <slot />
+
+    <!-- Revelado al scroll + contadores HUD (count-up). Respeta reduce-motion. -->
+    <script is:inline>
+      (() => {
+        const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        const supportsIO = 'IntersectionObserver' in window;
+
+        // ── Revelado progresivo ──
+        const reveals = document.querySelectorAll('.reveal, .reveal-op');
+        if (!supportsIO) {
+          reveals.forEach((el) => el.classList.add('is-visible'));
+        } else {
+          const io = new IntersectionObserver((entries) => {
+            entries.forEach((entry) => {
+              if (entry.isIntersecting) {
+                entry.target.classList.add('is-visible');
+                io.unobserve(entry.target);
+              }
+            });
+          }, { threshold: 0.12, rootMargin: '0px 0px -8% 0px' });
+          reveals.forEach((el) => io.observe(el));
+        }
+
+        // ── Contadores HUD (count-up) ──
+        // Elementos con [data-countup] cuyo texto es tipo "500+", "10+", "100%".
+        const parse = (raw) => {
+          const m = String(raw).match(/^(\D*)([\d.,]+)(.*)$/);
+          if (!m) return null;
+          return { pre: m[1], num: parseFloat(m[2].replace(/,/g, '')), suf: m[3], decimals: (m[2].split('.')[1] || '').length };
+        };
+        const run = (el) => {
+          const info = parse(el.dataset.countup || el.textContent);
+          if (!info) return;
+          if (reduce) { el.textContent = `${info.pre}${info.num}${info.suf}`; return; }
+          const dur = 1300, start = performance.now();
+          const tick = (now) => {
+            const p = Math.min((now - start) / dur, 1);
+            const eased = 1 - Math.pow(1 - p, 3); // easeOutCubic
+            const val = (info.num * eased).toFixed(info.decimals);
+            el.textContent = `${info.pre}${val}${info.suf}`;
+            if (p < 1) requestAnimationFrame(tick);
+          };
+          requestAnimationFrame(tick);
+        };
+        const counters = document.querySelectorAll('[data-countup]');
+        counters.forEach((el) => {
+          el.dataset.countup = el.textContent.trim();
+          // Evita el flash del valor final: arranca en 0 (salvo reduce-motion).
+          if (!reduce) {
+            const info = parse(el.dataset.countup);
+            if (info) el.textContent = `${info.pre}0${info.suf}`;
+          }
+        });
+
+        // ── Inclinación 3D que sigue al cursor (tilt) ──
+        const fine = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+        if (fine && !reduce) {
+          const MAX = 7;
+          document.querySelectorAll('[data-tilt]').forEach((el) => {
+            let rect = null, raf = 0;
+            const move = (e) => {
+              if (!rect) rect = el.getBoundingClientRect();
+              if (raf) return;
+              raf = requestAnimationFrame(() => {
+                raf = 0;
+                const px = (e.clientX - rect.left) / rect.width;
+                const py = (e.clientY - rect.top) / rect.height;
+                el.style.setProperty('--tx', ((px - 0.5) * 2 * MAX).toFixed(2) + 'deg');
+                el.style.setProperty('--ty', ((0.5 - py) * 2 * MAX).toFixed(2) + 'deg');
+                el.style.setProperty('--gx', (px * 100).toFixed(1) + '%');
+                el.style.setProperty('--gy', (py * 100).toFixed(1) + '%');
+              });
+            };
+            el.addEventListener('pointerenter', () => { rect = el.getBoundingClientRect(); });
+            el.addEventListener('pointermove', move);
+            el.addEventListener('pointerleave', () => {
+              if (raf) cancelAnimationFrame(raf); raf = 0; rect = null;
+              el.style.setProperty('--tx', '0deg');
+              el.style.setProperty('--ty', '0deg');
+            });
+          });
+        }
+        if (!supportsIO) {
+          counters.forEach(run);
+        } else {
+          const cio = new IntersectionObserver((entries) => {
+            entries.forEach((entry) => {
+              if (entry.isIntersecting) { run(entry.target); cio.unobserve(entry.target); }
+            });
+          }, { threshold: 0.6 });
+          counters.forEach((el) => cio.observe(el));
+        }
+      })();
+    </script>
+  </body>
+</html>

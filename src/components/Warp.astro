@@ -1,0 +1,124 @@
+---
+/* Warp.astro — Animación de hiperespacio (starfield a velocidad warp)
+   inspirada en "GT-Planar". Estelas de luz radiando desde un punto de
+   fuga. Reutilizable: variante clara (sutil, sobre fondo claro) u oscura
+   (dramática, sobre panel negro/violeta). Pausa fuera de viewport y
+   respeta prefers-reduced-motion. */
+interface Props {
+  variant?: 'light' | 'dark';
+  speed?: number;
+  density?: number;
+  colors?: string[];
+  bg?: string | null;
+  fade?: number;
+  class?: string;
+}
+
+const presets = {
+  dark: {
+    bg: '#0b0713',
+    fade: 0.30,
+    colors: ['#ffffff', '#ffffff', '#c9b3ff', '#7a40ed', '#f5ff63', '#00d68a'],
+    speed: 0.011,
+    alpha: 0.95,
+    maxWidth: 2.6,
+  },
+  light: {
+    bg: null,
+    fade: 0,
+    colors: ['rgba(122,64,237,0.55)', 'rgba(0,178,255,0.5)', 'rgba(25,23,28,0.22)'],
+    speed: 0.006,
+    alpha: 0.85,
+    maxWidth: 1.8,
+  },
+} as const;
+
+const { variant = 'dark', speed, density, colors, bg, fade, class: cls = '' } = Astro.props;
+const p = presets[variant];
+const cfg = {
+  bg: bg !== undefined ? bg : p.bg,
+  fade: fade ?? p.fade,
+  colors: colors ?? p.colors,
+  speed: speed ?? p.speed,
+  alpha: p.alpha,
+  maxWidth: p.maxWidth,
+  density: density ?? 260,
+};
+---
+
+<canvas class:list={['warp-canvas', cls]} data-warp={JSON.stringify(cfg)} aria-hidden="true"></canvas>
+
+<script>
+  // Se ejecuta una sola vez por página (Astro deduplica los <script> de módulo).
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function makeWarp(canvas: HTMLCanvasElement, cfg: any) {
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    let w = 1, h = 1, cx = 0, cy = 0, spread = 1, dpr = 1;
+    let stars: { x: number; y: number; z: number; c: string }[] = [];
+    let raf = 0, visible = true;
+    const rand = (a: number, b: number) => a + Math.random() * (b - a);
+    const pick = () => cfg.colors[(Math.random() * cfg.colors.length) | 0];
+    const spawn = (fresh: boolean) => ({ x: rand(-1, 1), y: rand(-1, 1), z: fresh ? 1 : rand(0.05, 1), c: pick() });
+
+    function resize() {
+      dpr = Math.min(window.devicePixelRatio || 1, 2);
+      const r = canvas.getBoundingClientRect();
+      w = Math.max(1, r.width); h = Math.max(1, r.height);
+      cx = w / 2; cy = h / 2; spread = Math.max(w, h);
+      canvas.width = Math.round(w * dpr); canvas.height = Math.round(h * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      const n = Math.max(50, Math.min(cfg.density, Math.round((w * h) / 5200)));
+      stars = Array.from({ length: n }, () => spawn(false));
+      if (cfg.bg) { ctx.fillStyle = cfg.bg; ctx.fillRect(0, 0, w, h); }
+    }
+
+    function draw() {
+      if (cfg.bg) { ctx.globalAlpha = cfg.fade; ctx.fillStyle = cfg.bg; ctx.fillRect(0, 0, w, h); ctx.globalAlpha = 1; }
+      else { ctx.clearRect(0, 0, w, h); }
+      ctx.lineCap = 'round';
+      for (const s of stars) {
+        s.z -= cfg.speed;
+        if (s.z < 0.03) { Object.assign(s, spawn(true)); continue; }
+        const k = 0.16 * spread / s.z;
+        const kPrev = 0.16 * spread / (s.z + cfg.speed * 4);
+        const sx = cx + s.x * k, sy = cy + s.y * k;
+        const px = cx + s.x * kPrev, py = cy + s.y * kPrev;
+        const t = 1 - s.z;
+        ctx.strokeStyle = s.c;
+        ctx.globalAlpha = Math.min(1, cfg.alpha * (0.15 + 0.85 * t));
+        ctx.lineWidth = Math.max(0.4, t * cfg.maxWidth);
+        ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(sx, sy); ctx.stroke();
+      }
+      ctx.globalAlpha = 1;
+    }
+
+    function loop() { draw(); raf = requestAnimationFrame(loop); }
+    const play = () => { if (!raf && visible && !reduce) raf = requestAnimationFrame(loop); };
+    const stop = () => { if (raf) { cancelAnimationFrame(raf); raf = 0; } };
+
+    resize();
+    if (reduce) {
+      // Fotograma estático: unos pasos de simulación y una pasada de dibujo.
+      for (const s of stars) s.z = rand(0.15, 0.9);
+      draw();
+      return;
+    }
+    const io = new IntersectionObserver(([e]) => { visible = e.isIntersecting; visible ? play() : stop(); }, { threshold: 0 });
+    io.observe(canvas);
+    let rt: number;
+    window.addEventListener('resize', () => { clearTimeout(rt); rt = window.setTimeout(() => { stop(); resize(); play(); }, 160); }, { passive: true });
+    play();
+  }
+
+  function initWarps() {
+    document.querySelectorAll<HTMLCanvasElement>('canvas[data-warp]:not([data-warp-ready])').forEach((c) => {
+      c.setAttribute('data-warp-ready', '');
+      try { makeWarp(c, JSON.parse(c.dataset.warp || '{}')); } catch {}
+    });
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initWarps);
+  else initWarps();
+</script>

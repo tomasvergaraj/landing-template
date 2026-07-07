@@ -1,0 +1,121 @@
+---
+import { Icon } from 'astro-icon/components';
+import { SERVICES } from '../config';
+
+// Mapea la variante de cada item al estilo de tarjeta + chip de icono.
+// Mantenemos las tarjetas de color como acentos; el resto son blancas.
+const cardClass: Record<string, string> = {
+  white: '',
+  violet: 'card--violet',
+  blue: 'card--blue',
+  volt: 'card--volt',
+};
+const chipClass: Record<string, string> = {
+  white: 'icon-chip',
+  violet: 'icon-chip icon-chip--white',
+  blue: 'icon-chip icon-chip--blue',
+  volt: 'icon-chip icon-chip--violet',
+};
+---
+
+<section id="servicios" class="section svc">
+  <div class="svc__glow" aria-hidden="true"></div>
+
+  <div class="container">
+    <div class="section-head section-head--center">
+      <span class="eyebrow reveal">{SERVICES.eyebrow}</span>
+      <h2 class="h2 svc__title reveal" style="--reveal-delay:.06s">{SERVICES.title}</h2>
+      <p class="lead svc__lead reveal" style="--reveal-delay:.12s">{SERVICES.subtitle}</p>
+    </div>
+
+    <div class="grid grid-3 svc__grid">
+      {SERVICES.items.map((item, i) => (
+        <article
+          class={`card ${cardClass[item.variant] ?? ''} tilt3d svc__card svc__card--${item.variant} reveal-op`}
+          style={`--reveal-delay:${0.08 * i + 0.1}s`}
+          data-tilt
+        >
+          <span class="tilt3d__glare" aria-hidden="true"></span>
+          <span class={chipClass[item.variant] ?? 'icon-chip'} aria-hidden="true">
+            <Icon name={`lucide:${item.icon}`} />
+          </span>
+          <h3 class="h3 svc__card-title">{item.title}</h3>
+          <p class="text-soft svc__card-desc">{item.description}</p>
+        </article>
+      ))}
+    </div>
+  </div>
+</section>
+
+<style>
+  .svc {
+    position: relative;
+    overflow: clip;
+  }
+
+  /* Resplandor suave de fondo (kinetic playground, muy sutil) */
+  .svc__glow {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background:
+      radial-gradient(560px 360px at 88% 4%, rgba(122, 64, 237, 0.08), transparent 70%),
+      radial-gradient(600px 420px at 4% 96%, rgba(0, 178, 255, 0.07), transparent 70%);
+  }
+
+  .svc__title { max-width: 16ch; margin-inline: auto; margin-top: 18px; }
+  .svc__lead { max-width: 58ch; margin-inline: auto; margin-top: 20px; }
+
+  .svc__grid { gap: 24px; }
+
+  /* Tarjeta de servicio: contenido apilado y acolchado */
+  .svc__card {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 18px;
+    min-height: 246px;
+    transition: transform var(--t-base), box-shadow var(--t-base), rotate var(--t-base), opacity 0.5s var(--ease-out);
+  }
+
+  .svc__card-title { margin-top: 2px; }
+  .svc__card-desc { font-size: 1rem; line-height: 1.55; }
+
+  /* Tarjetas de color = acentos playful con una pizca de rotación */
+  .svc__card--violet { rotate: -2deg; box-shadow: var(--shadow-violet); }
+  .svc__card--blue   { rotate: 2deg; translate: 0 -6px; }
+  .svc__card--volt   { rotate: -1.5deg; }
+
+  /* Al pasar el cursor, la tarjeta se endereza y se eleva */
+  .svc__card:hover { rotate: 0deg; }
+  .svc__card--blue:hover { translate: 0 0; }
+
+  /* Descripción legible sobre bloques de color saturado */
+  .svc__card--blue .svc__card-desc,
+  .svc__card--volt .svc__card-desc { color: rgba(25, 23, 28, 0.74); }
+
+  @media (max-width: 960px) {
+    .svc__card { min-height: 220px; }
+  }
+
+  /* En una sola columna, las rotaciones se ven raras: las anulamos */
+  @media (max-width: 620px) {
+    .svc__card { min-height: 0; }
+    .svc__card--violet,
+    .svc__card--blue,
+    .svc__card--volt {
+      rotate: 0deg;
+      translate: 0 0;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .svc__card--violet,
+    .svc__card--blue,
+    .svc__card--volt {
+      rotate: 0deg;
+      translate: 0 0;
+    }
+  }
+</style>

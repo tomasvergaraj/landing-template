@@ -1,0 +1,144 @@
+---
+import { Icon } from 'astro-icon/components';
+import { FAQ } from '../config';
+---
+
+<section id="faq" class="faq section" aria-labelledby="faq-title">
+  <div class="container">
+    <div class="section-head section-head--center reveal">
+      <span class="eyebrow eyebrow--blue">{FAQ.eyebrow}</span>
+      <h2 id="faq-title" class="h2 faq__title">{FAQ.title}</h2>
+      <p class="lead faq__lead">{FAQ.subtitle}</p>
+    </div>
+
+    <div class="faq__list">
+      {FAQ.items.map((item, i) => (
+        <details class="faq__item reveal" style={`--reveal-delay:${0.06 * i}s`}>
+          <summary class="faq__q">
+            <span class="faq__q-text">{item.q}</span>
+            <span class="faq__icon" aria-hidden="true">
+              <Icon name="lucide:plus" />
+            </span>
+          </summary>
+          <div class="faq__a">
+            <p class="text-soft">{item.a}</p>
+          </div>
+        </details>
+      ))}
+    </div>
+  </div>
+</section>
+
+<style>
+  .faq__title { margin-top: 18px; }
+  .faq__lead { margin-top: 18px; }
+
+  .faq__list {
+    max-width: 760px;
+    margin-inline: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  /* Contenedor tarjeta blanca acolchada por cada pregunta */
+  .faq__item {
+    background: var(--white);
+    border-radius: var(--r-lg);
+    padding: 0;
+    box-shadow: var(--shadow-xs);
+    border: 1px solid var(--border);
+    transition: border-color var(--t-base), box-shadow var(--t-base), background var(--t-base);
+  }
+  .faq__item:hover { box-shadow: var(--shadow-sm); }
+
+  /* Estado abierto: tinte sutil hacia el violeta */
+  .faq__item[open] {
+    border-color: rgba(122, 64, 237, 0.3);
+    background: linear-gradient(var(--white), var(--white)) padding-box,
+      rgba(122, 64, 237, 0.02);
+    box-shadow: var(--shadow-sm);
+  }
+
+  /* Cabecera clicable */
+  .faq__q {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    padding: 22px 26px;
+    cursor: pointer;
+    list-style: none;
+    user-select: none;
+  }
+  .faq__q::-webkit-details-marker { display: none; }
+
+  .faq__q-text {
+    font-family: var(--font-display);
+    font-size: 1.05rem;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    line-height: 1.25;
+    color: var(--ink);
+  }
+  .faq__item[open] .faq__q-text { color: var(--violet); }
+
+  /* Icono circular +/- que rota al abrir */
+  .faq__icon {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: var(--mist);
+    color: var(--violet);
+    border: 1px solid var(--border);
+    transition: transform var(--t-base), background var(--t-base), color var(--t-base), border-color var(--t-base);
+  }
+  .faq__icon :global(svg) { width: 20px; height: 20px; }
+
+  .faq__q:hover .faq__icon { background: var(--sky); color: var(--blue); }
+
+  /* Al abrir: el "+" gira a "×" y se pinta de violeta */
+  .faq__item[open] .faq__icon {
+    transform: rotate(135deg);
+    background: var(--violet);
+    color: var(--white);
+    border-color: transparent;
+  }
+  .faq__item[open] .faq__q:hover .faq__icon { background: #6a2fe0; color: var(--white); }
+
+  /* Respuesta */
+  .faq__a {
+    padding: 0 26px 24px;
+  }
+  .faq__a p {
+    max-width: 60ch;
+    font-size: 1rem;
+    line-height: 1.6;
+  }
+
+  /* Fade sutil del contenido al abrir (native details no anima altura) */
+  @keyframes faq-fade {
+    from { opacity: 0; transform: translateY(-6px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .faq__item[open] .faq__a {
+    animation: faq-fade 0.32s var(--ease-out);
+  }
+
+  @media (max-width: 620px) {
+    .faq__q { padding: 18px 18px; gap: 14px; }
+    .faq__q-text { font-size: 0.98rem; }
+    .faq__icon { width: 34px; height: 34px; }
+    .faq__icon :global(svg) { width: 18px; height: 18px; }
+    .faq__a { padding: 0 18px 20px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .faq__item[open] .faq__a { animation: none; }
+    .faq__icon { transition: none; }
+  }
+</style>

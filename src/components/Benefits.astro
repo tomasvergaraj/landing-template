@@ -1,0 +1,111 @@
+---
+import { Icon } from 'astro-icon/components';
+import { BENEFITS } from '../config';
+---
+
+<section id="beneficios" class="section benefits" aria-labelledby="benefits-title">
+  <div class="container">
+    <div class="benefits__panel reveal">
+      <!-- Deco flotante sutil dentro del panel -->
+      <span class="benefits__deco benefits__deco--a" aria-hidden="true"></span>
+      <span class="benefits__deco benefits__deco--b" aria-hidden="true"></span>
+
+      <div class="section-head benefits__head">
+        <span class="eyebrow reveal">{BENEFITS.eyebrow}</span>
+        <h2 id="benefits-title" class="h2 benefits__title reveal" style="--reveal-delay:.06s">
+          {BENEFITS.title}
+        </h2>
+        <p class="lead benefits__lead reveal" style="--reveal-delay:.12s">{BENEFITS.subtitle}</p>
+      </div>
+
+      <ul class="grid grid-3 benefits__grid">
+        {BENEFITS.items.map((item, i) => (
+          <li
+            class="card card--hover benefits__card reveal-op"
+            style={`--reveal-delay:${0.1 + i * 0.07}s`}
+          >
+            <span class="icon-chip icon-chip--violet benefits__chip" aria-hidden="true">
+              <Icon name={`lucide:${item.icon}`} />
+            </span>
+            <h3 class="h3 benefits__card-title">{item.title}</h3>
+            <p class="text-soft benefits__card-desc">{item.desc}</p>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </div>
+</section>
+
+<style>
+  /* Panel de color: el "momento playful" de la sección */
+  .benefits__panel {
+    position: relative;
+    border-radius: var(--r-2xl);
+    padding: clamp(32px, 5vw, 64px);
+    background: var(--lavender);
+    box-shadow: var(--shadow-md);
+    overflow: clip;
+  }
+
+  /* Cabecera legible sobre el tinte lavanda */
+  .benefits__head {
+    max-width: 640px;
+    margin-bottom: clamp(32px, 4vw, 52px);
+    position: relative;
+    z-index: 1;
+  }
+  .benefits__title { color: var(--plum); }
+  .benefits__lead {
+    color: var(--violet-ink);
+    margin-top: 20px;
+  }
+
+  /* Grid de tarjetas blancas que flotan sobre el panel */
+  .benefits__grid {
+    position: relative;
+    z-index: 1;
+  }
+  .benefits__card {
+    padding: 22px;
+    border-radius: var(--r-lg);
+    box-shadow: var(--shadow-md);
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .benefits__chip { margin-bottom: 2px; }
+  .benefits__card-title {
+    font-size: 1.15rem;
+    color: var(--ink);
+  }
+  .benefits__card-desc {
+    font-size: 0.98rem;
+    line-height: 1.5;
+  }
+
+  /* Decoración: burbujas suaves para dar profundidad al panel */
+  .benefits__deco {
+    position: absolute;
+    border-radius: 50%;
+    z-index: 0;
+    pointer-events: none;
+  }
+  .benefits__deco--a {
+    width: 220px; height: 220px;
+    top: -70px; right: -40px;
+    background: radial-gradient(circle at 30% 30%, rgba(122, 64, 237, 0.22), transparent 70%);
+  }
+  .benefits__deco--b {
+    width: 260px; height: 260px;
+    bottom: -110px; left: -70px;
+    background: radial-gradient(circle at 50% 50%, rgba(0, 178, 255, 0.16), transparent 70%);
+  }
+
+  @media (max-width: 620px) {
+    .benefits__card { padding: 20px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .benefits__card { transition: none; }
+  }
+</style>

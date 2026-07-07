@@ -1,0 +1,154 @@
+---
+import { Icon } from 'astro-icon/components';
+import { CTA, waLink, telLink } from '../config';
+import WhatsAppIcon from './WhatsAppIcon.astro';
+import Warp from './Warp.astro';
+---
+
+<section id="contacto" class="cta section" aria-labelledby="cta-title">
+  <div class="container">
+    <div class="cta__panel scanline reveal">
+      <!-- Hiperespacio (GT-Planar): el momento warp -->
+      <Warp variant="dark" speed={0.013} class="cta__warp" />
+      <!-- Formas decorativas flotantes (kinetic playground) -->
+      <span class="cta__deco cta__deco--a float" aria-hidden="true"></span>
+      <span class="cta__deco cta__deco--b float2" aria-hidden="true"></span>
+      <span class="cta__deco cta__deco--c float3" aria-hidden="true"></span>
+      <span class="cta__deco cta__deco--d float2" aria-hidden="true"></span>
+      <span class="cta__deco cta__deco--e float3" aria-hidden="true"></span>
+
+      <div class="cta__inner">
+        <span class="mono mono--cursor cta__mono reveal">{CTA.eyebrow}</span>
+
+        <h2 id="cta-title" class="h2 cta__title reveal" style="--reveal-delay:.08s">
+          {CTA.title}
+        </h2>
+
+        <p class="lead cta__lead reveal" style="--reveal-delay:.14s">{CTA.subtitle}</p>
+
+        <div class="cta__actions reveal" style="--reveal-delay:.2s">
+          <a
+            href={waLink()}
+            class="btn btn--volt btn--lg"
+            target="_blank"
+            rel="noopener"
+          >
+            <WhatsAppIcon size={20} /> {CTA.ctaPrimary}
+          </a>
+          <a href={telLink()} class="btn btn--lg cta__btn-ghost">
+            <Icon name="lucide:phone" /> {CTA.ctaSecondary}
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .cta__panel {
+    position: relative;
+    isolation: isolate;
+    overflow: clip;
+    border-radius: clamp(28px, 4vw, 44px);
+    padding: clamp(48px, 7vw, 96px) clamp(28px, 6vw, 80px);
+    text-align: center;
+    color: var(--white);
+    background:
+      radial-gradient(120% 130% at 50% 6%, #2a1758 0%, transparent 62%),
+      radial-gradient(110% 120% at 88% 100%, #1a0f3d 0%, transparent 60%),
+      #0b0713;
+    box-shadow: var(--shadow-violet);
+  }
+
+  /* Lienzo warp de fondo (debajo de deco/contenido) */
+  .cta__warp { z-index: 0; }
+
+  /* Etiqueta técnica mono (HUD) */
+  .cta__mono {
+    color: #c9b3ff;
+    font-size: 0.78rem;
+    letter-spacing: 0.28em;
+  }
+
+  .cta__inner {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  /* Eyebrow con look claro/translúcido sobre violeta */
+  .cta__eyebrow {
+    background: rgba(255, 255, 255, 0.16);
+    border-color: rgba(255, 255, 255, 0.28);
+    color: var(--white);
+    box-shadow: none;
+    -webkit-backdrop-filter: blur(6px);
+    backdrop-filter: blur(6px);
+  }
+  .cta__eyebrow::before { background: var(--volt); }
+
+  .cta__title {
+    color: var(--white);
+    max-width: 18ch;
+    margin-top: 24px;
+  }
+
+  .cta__lead {
+    color: rgba(255, 255, 255, 0.86);
+    max-width: 54ch;
+    margin-top: 22px;
+  }
+
+  .cta__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    justify-content: center;
+    margin-top: 40px;
+  }
+
+  /* Botón fantasma sobre fondo oscuro/violeta */
+  .cta__btn-ghost {
+    background: transparent;
+    color: var(--white);
+    border: 1.5px solid rgba(255, 255, 255, 0.5);
+  }
+  .cta__btn-ghost:hover {
+    border-color: var(--white);
+    background: rgba(255, 255, 255, 0.12);
+  }
+
+  /* ── Formas decorativas flotantes ───────────────────────────── */
+  .cta__deco {
+    position: absolute;
+    z-index: 1;
+    display: block;
+    box-shadow: var(--shadow-md);
+  }
+  .cta__deco--a { top: 14%; left: 6%; width: 58px; height: 58px; border-radius: 18px; background: var(--volt); rotate: -12deg; }
+  .cta__deco--b { top: 22%; right: 7%; width: 46px; height: 46px; border-radius: 50%; background: var(--blue); }
+  .cta__deco--c { bottom: 16%; left: 9%; width: 40px; height: 40px; border-radius: 50%; background: rgba(255, 255, 255, 0.85); }
+  .cta__deco--d { bottom: 20%; right: 8%; width: 62px; height: 62px; border-radius: 20px; background: var(--lavender); rotate: 10deg; }
+  .cta__deco--e { top: 60%; left: 3%; width: 34px; height: 34px; border-radius: 12px; background: var(--ice); rotate: 6deg; }
+
+  @keyframes cta-floaty {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-14px); }
+  }
+  .float  { animation: cta-floaty 6s var(--ease-out) infinite; }
+  .float2 { animation: cta-floaty 7.5s var(--ease-out) -2s infinite; }
+  .float3 { animation: cta-floaty 5.5s var(--ease-out) -1s infinite; }
+
+  @media (max-width: 960px) {
+    .cta__deco { display: none; }
+  }
+  @media (max-width: 620px) {
+    .cta__actions { width: 100%; }
+    .cta__actions .btn { width: 100%; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .float, .float2, .float3 { animation: none; }
+  }
+</style>

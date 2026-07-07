@@ -1,20 +1,19 @@
 {
   "name": "landing-template",
-  "private": true,
-  "version": "1.0.0",
   "type": "module",
+  "version": "2.0.0",
+  "description": "Plantilla de landing page playful (estilo Jitter) construida con Astro. SEO-first, editable desde un solo archivo de configuración.",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview"
+    "dev": "astro dev",
+    "start": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro"
   },
   "dependencies": {
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
-    "lucide-react": "^0.383.0"
-  },
-  "devDependencies": {
-    "@vitejs/plugin-react": "^4.3.1",
-    "vite": "^5.4.2"
+    "astro": "^5.6.1",
+    "@astrojs/sitemap": "^3.3.0",
+    "astro-icon": "^1.1.5",
+    "@iconify-json/lucide": "^1.2.30"
   }
 }

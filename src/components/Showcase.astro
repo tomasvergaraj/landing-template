@@ -1,0 +1,170 @@
+---
+import { Icon } from 'astro-icon/components';
+import { SHOWCASE } from '../config';
+
+// Mapea la variante de cada tile a un bloque de color del sistema.
+const bgClass: Record<string, string> = {
+  violet: 'card--violet',
+  blue: 'card--blue',
+  volt: 'card--volt',
+  sky: 'card--sky',
+  white: '', // .card ya es blanco
+};
+---
+
+<section id="proyectos" class="section showcase">
+  <div class="container">
+    <div class="section-head section-head--center reveal">
+      <span class="eyebrow">{SHOWCASE.eyebrow}</span>
+      <h2 class="h2 showcase__title">{SHOWCASE.title}</h2>
+      <p class="lead showcase__lead">{SHOWCASE.subtitle}</p>
+    </div>
+
+    <div class="showcase__grid">
+      {SHOWCASE.items.map((item, i) => {
+        const span = i === 0 ? 'tile--tall' : i === 3 || i === 5 ? 'tile--wide' : '';
+        const isWhite = item.variant === 'white';
+        return (
+          <article
+            class={`card ${bgClass[item.variant] ?? ''} tilt3d tile tile--${item.variant} ${span} reveal-op`}
+            style={`--reveal-delay:${(i * 0.07).toFixed(2)}s`}
+            data-tilt
+          >
+            <span class="tilt3d__glare" aria-hidden="true"></span>
+            {/* Marca de agua gráfica (placeholder sin fotos) */}
+            <span class="tile__ghost" aria-hidden="true">
+              <Icon name={`lucide:${item.icon}`} />
+            </span>
+
+            <div class="tile__top">
+              <span class="tag">{item.tag}</span>
+            </div>
+
+            <div class="tile__foot">
+              <span class="tile__icon" aria-hidden="true">
+                <Icon name={`lucide:${item.icon}`} />
+              </span>
+              <h3 class="h3 tile__label">{item.label}</h3>
+              {isWhite && (
+                <p class="tile__hint">
+                  <Icon name="lucide:image" /> Reemplazar con foto real
+                </p>
+              )}
+            </div>
+          </article>
+        );
+      })}
+    </div>
+  </div>
+</section>
+
+<style>
+  .showcase__title { margin-top: 18px; }
+  .showcase__lead { margin-top: 18px; margin-inline: auto; }
+
+  /* ── Bento grid: 3 columnas con tiles de tamaños mixtos ── */
+  .showcase__grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-auto-rows: minmax(210px, 1fr);
+    gap: 18px;
+  }
+
+  .tile {
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 18px;
+    padding: clamp(22px, 2.4vw, 30px);
+    border-radius: var(--r-xl);
+  }
+
+  /* Ritmo bento: un tile alto (2 filas) y dos anchos (2 columnas) */
+  .tile--tall { grid-row: span 2; }
+  .tile--wide { grid-column: span 2; }
+
+  /* Brillo suave (profundidad de placeholder gráfico) */
+  .tile::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: radial-gradient(150px 130px at 84% 8%, rgba(255, 255, 255, 0.22), transparent 70%);
+  }
+  .tile--white::before,
+  .tile--sky::before {
+    background: radial-gradient(170px 140px at 84% 6%, rgba(122, 64, 237, 0.1), transparent 70%);
+  }
+
+  /* Icono grande como marca de agua decorativa */
+  .tile__ghost {
+    position: absolute;
+    right: -18px;
+    bottom: -24px;
+    color: currentColor;
+    opacity: 0.13;
+    transform: rotate(-14deg);
+    pointer-events: none;
+  }
+  .tile__ghost :global(svg) { width: 152px; height: 152px; }
+  .tile--tall .tile__ghost :global(svg) { width: 196px; height: 196px; }
+  .tile--white .tile__ghost,
+  .tile--sky .tile__ghost { color: var(--violet); opacity: 0.08; }
+
+  .tile__top,
+  .tile__foot { position: relative; z-index: 1; }
+
+  /* Tag más nítida sobre bloques de color saturado */
+  .tile--violet .tag,
+  .tile--blue .tag,
+  .tile--volt .tag {
+    background: rgba(255, 255, 255, 0.92);
+    border-color: transparent;
+    color: var(--ink);
+  }
+
+  .tile__foot { display: flex; flex-direction: column; gap: 12px; }
+
+  .tile__icon { display: inline-flex; }
+  .tile__icon :global(svg) {
+    width: clamp(38px, 4vw, 50px);
+    height: clamp(38px, 4vw, 50px);
+  }
+  /* En tiles claros el icono lleva la chispa violeta de marca */
+  .tile--white .tile__icon,
+  .tile--sky .tile__icon { color: var(--violet); }
+
+  /* El heading global fuerza color ink; heredamos el color del bloque */
+  .tile .tile__label { color: inherit; }
+
+  .tile__hint {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.74rem;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    color: var(--slate);
+  }
+  .tile__hint :global(svg) { width: 14px; height: 14px; }
+
+  /* ── Responsive: 2 columnas (sin spans) y luego 1 columna ── */
+  @media (max-width: 960px) {
+    .showcase__grid {
+      grid-template-columns: repeat(2, 1fr);
+      grid-auto-rows: minmax(200px, auto);
+    }
+    .tile--tall { grid-row: auto; }
+    .tile--wide { grid-column: auto; }
+  }
+  @media (max-width: 620px) {
+    .showcase__grid { grid-template-columns: 1fr; }
+    .tile { min-height: 200px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .card--hover:hover { transform: none; }
+  }
+</style>
