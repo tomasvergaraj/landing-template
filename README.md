@@ -4,7 +4,7 @@
 
 **Plantilla de landing page profesional, _playful_ y ultra‑optimizada para SEO — construida con [Astro](https://astro.build).**
 
-Lienzo claro y acolchado, formas tipo píldora, bloques de color saturado y micro‑animaciones con profundidad 3D. Todo el contenido se edita desde **un solo archivo**.
+Lienzo claro y acolchado, formas tipo píldora, bloques de color saturado y un **fondo 3D interactivo de cubos** que muta de figura sección a sección. Todo el contenido se edita desde **un solo archivo**.
 
 <br/>
 
@@ -45,8 +45,9 @@ Lienzo claro y acolchado, formas tipo píldora, bloques de color saturado y micr
 
 ### 🎨 Diseño
 - **Estética _playful_ "Jitter"** — lienzo _off‑white_, tarjetas blancas acolchadas que flotan con sombras difusas, formas tipo píldora (radios 20–40 px) y bloques de color saturado (violeta de marca + azul eléctrico + _volt_).
+- **Fondo 3D de cubos (`PointField`)** — miles de pequeños cubos isométricos delineados que flotan y giran en un espacio con profundidad real (capas por delante y por detrás de la figura). Una **figura focal muta por sección** — esfera → engranaje → hélice → galaxia — y se **ancla al lado libre** del layout, o se dispersa por todo el viewport en las secciones de ancho completo.
+- **Layout alternado por sección**: Hero, Servicios, Proceso y FAQ llevan la información a un lado y la figura 3D al otro; Logos, Beneficios, Testimonios, Proyectos y CTA van a todo el ancho sobre cubos dispersos.
 - **Palabras resaltadas con marcador**, chips de icono de colores y etiquetas técnicas monoespaciadas (estilo HUD).
-- **Modo claro** pulido y coherente en todas las secciones.
 - **11 secciones completas**: navbar flotante, hero, marquesina de logos, servicios, beneficios, proceso, testimonios, showcase (bento), FAQ, CTA y footer, más botón flotante de WhatsApp.
 
 ### 🧩 Editable
@@ -60,11 +61,14 @@ Lienzo claro y acolchado, formas tipo píldora, bloques de color saturado y micr
 - **Imagen social** 1200×630 lista para compartir.
 
 ### 🎬 Movimiento
-- **Animación de hiperespacio (warp)** en `<canvas>` — sutil en el hero, protagonista en el CTA.
+- **Fondo 3D de cubos** con motor propio en `<canvas>` (sin librerías): la figura hace _morph_ entre secciones y viaja animadamente al lado que le toca.
+- **Hover "pop‑out 3D + brújula"** sobre la figura: los cubos cercanos al cursor **se despegan hacia la cámara** (crecen y hacen parallax por perspectiva real, no por escala) y **rotan para apuntar al puntero**, como limaduras de hierro ante un imán.
+- **Cámara con parallax** que se inclina y panea suavemente siguiendo al mouse — las capas de profundidad se desplazan a distinta velocidad.
+- **Animación de hiperespacio (warp)** en `<canvas>` — protagonista en el CTA.
 - **Entrada 3D de secciones al hacer scroll** (sensación de "atravesar el espacio").
 - **Inclinación 3D al cursor** con brillo especular en las tarjetas.
 - **Contadores animados** (count‑up) y revelado progresivo al hacer scroll.
-- Todo respeta **`prefers-reduced-motion`**.
+- Todo respeta **`prefers-reduced-motion`** (el fondo 3D se vuelve estático y se re‑dibuja por sección).
 
 ### ♿ Calidad
 - HTML **semántico**, foco visible, `aria-label`s y contraste cuidado.
@@ -148,6 +152,21 @@ Reemplaza en `public/`:
 - `logo.png` — tu logotipo.
 - `og-image.png` — imagen social (1200×630).
 
+### 6. Fondo 3D de cubos
+
+Todo el motor vive en **`src/components/PointField.astro`**. Los diales principales:
+
+| Qué | Dónde |
+|---|---|
+| **Figura y lado por sección** | Mapa `SECTIONS`: `{ shape: 'sphere' \| 'gear' \| 'helix' \| 'galaxy' \| 'scatter'…, anchor: 'left' \| 'right' \| 'center', contentW }` |
+| **Figuras disponibles** | `shapers`: esfera, onda, toro, hélice, engranaje, diamante, corazón, galaxia y dispersión |
+| **Paleta de cubos** | Arrays `COLORS` / `ALPHA` / `WEIGHTS` |
+| **Densidad** | `NF` (figura) y `NFAR`/`NNEAR` (ambiente) en `build()` |
+| **Hover pop‑out + brújula** | `RR` (radio del campo), `qe * 1.3` (altura), `kl` (velocidad de subida/bajada) |
+| **Cámara** | Amplitudes `0.16 / 0.1` (inclinación) y `85 / 60` (paneo en px) |
+
+> El `anchor` de cada sección se calcula contra el **hueco real** que deja la columna de contenido (`contentW`), así la figura nunca queda escondida detrás de las tarjetas en pantallas medianas.
+
 ---
 
 ## 📂 Estructura del proyecto
@@ -164,6 +183,7 @@ Reemplaza en `public/`:
     ├── layouts/Layout.astro # <head>, SEO, fuentes, JSON-LD, scripts
     ├── pages/index.astro    # Compone la página
     └── components/
+        ├── PointField.astro # ⭐ Fondo 3D de cubos (motor canvas propio)
         ├── Navbar.astro     Hero.astro       Logos.astro
         ├── Services.astro   Benefits.astro   Process.astro
         ├── Testimonials.astro  Showcase.astro  Faq.astro
@@ -197,14 +217,17 @@ Todo el look se define con **tokens CSS** en `src/styles/global.css`.
 
 | Efecto | Descripción | Dónde |
 |---|---|---|
-| **Warp / hiperespacio** | Estelas de luz radiando desde un punto de fuga (canvas, sin librerías). | Hero (sutil), CTA (protagonista) |
+| **Fondo 3D de cubos** | Cubos isométricos delineados flotando y girando en un volumen con profundidad real; la figura focal hace _morph_ por sección y viaja al lado libre del layout (o se dispersa a pantalla completa). | Toda la página (fondo fijo) |
+| **Pop‑out 3D + brújula** | Al pasar el cursor sobre la figura, sus cubos se elevan hacia la cámara (perspectiva real) y rotan para apuntar al puntero: campo magnético visible. | Figura del fondo 3D |
+| **Cámara parallax** | La vista se inclina y panea suavemente hacia el mouse; cada capa de profundidad se desplaza a distinta velocidad. | Fondo 3D (global) |
+| **Warp / hiperespacio** | Estelas de luz radiando desde un punto de fuga (canvas, sin librerías). | CTA (protagonista) |
 | **Entrada 3D al scroll** | Las secciones emergen desde la profundidad al entrar en pantalla. | Todas las secciones |
 | **Tilt 3D al cursor** | La tarjeta se inclina hacia el puntero + brillo especular. | Servicios, Showcase |
 | **Count‑up** | Las estadísticas suben desde 0 al hacerse visibles. | Hero |
 | **Revelado progresivo** | Aparición suave escalonada. | Toda la página |
 | **Micro‑interacciones** | Lifts, anillos HUD, cursores parpadeantes, marquesina. | Global |
 
-> Todas las animaciones se desactivan automáticamente si el usuario activa **"reducir movimiento"** en su sistema. El warp se pausa cuando está fuera de pantalla y el tilt solo se activa en punteros finos (mouse/trackpad).
+> Todas las animaciones se desactivan automáticamente si el usuario activa **"reducir movimiento"** en su sistema (el fondo 3D pasa a un render estático que se actualiza por sección). Los canvas se pausan con la pestaña oculta y las interacciones de cursor solo se activan en punteros finos (mouse/trackpad).
 
 ---
 
@@ -235,9 +258,11 @@ Configurado en `src/layouts/Layout.astro` y `astro.config.mjs`:
 ## 🚀 Rendimiento
 
 - **Astro SSG**: se sirve HTML estático — sin _hydration_ de framework.
-- **Cero JS por defecto**; solo un script mínimo y liviano para animaciones.
+- **Cero JS de framework**; solo scripts mínimos para las animaciones (el motor 3D completo pesa ~3.7 KB gzip).
+- **Fondo 3D con delta‑time**: velocidad idéntica en pantallas de 60/120/144 Hz, con render limitado a ~60 fps (en monitores rápidos salta frames → misma fluidez, la mitad de CPU).
+- **Densidad adaptativa**: menos partículas en móvil; el colapso de la barra de URL móvil usa un _fast‑path_ que no reconstruye el campo (sin saltos al hacer scroll).
 - CSS crítico en línea y fuentes con `preconnect`.
-- Animaciones aceleradas por GPU (`transform` / `opacity`) y `canvas` pausado fuera de vista.
+- Animaciones aceleradas por GPU (`transform` / `opacity`) y `canvas` pausado con la pestaña oculta.
 
 ---
 
@@ -246,10 +271,11 @@ Configurado en `src/layouts/Layout.astro` y `astro.config.mjs`:
 | | Chrome / Edge | Firefox / Safari | Móvil |
 |---|:---:|:---:|:---:|
 | Diseño, SEO, responsive | ✅ | ✅ | ✅ |
+| **Fondo 3D de cubos** | ✅ | ✅ | ✅¹ |
 | Warp, count‑up, tilt, hover | ✅ | ✅ | ✅¹ |
 | **Entrada 3D al scroll** | ✅ | ↩️ fallback² | ✅ |
 
-¹ El tilt requiere puntero fino; en táctil se omite (por diseño).
+¹ Las interacciones de cursor (tilt, pop‑out + brújula, cámara parallax) requieren puntero fino; en táctil se omiten (por diseño). El fondo 3D anima igual en móvil, con menor densidad de partículas.
 ² La entrada 3D usa `animation-timeline: view()`. En navegadores que aún no lo soportan, las secciones se revelan con un desvanecido suave (sin el efecto 3D). Progressive enhancement, nunca se rompe.
 
 ---
@@ -289,7 +315,7 @@ En Vercel/Netlify/Cloudflare basta con conectar el repositorio: detectan Astro a
 | **Iconos** | [astro-icon](https://github.com/natemoo-re/astro-icon) + [Lucide](https://lucide.dev) |
 | **Tipografía** | Space Grotesk · Space Mono · Inter (Google Fonts) |
 | **SEO** | `@astrojs/sitemap` · JSON‑LD · OG/Twitter |
-| **Animación** | Canvas + CSS scroll-driven (sin librerías) |
+| **Animación** | Motor 3D propio en canvas (cubos) + warp + CSS scroll-driven — todo sin librerías |
 
 ---
 
