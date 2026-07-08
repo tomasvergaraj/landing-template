@@ -1,0 +1,478 @@
+---
+/* PointField.astro — LA FEATURE
+   Fondo 3D de toda la página hecho de PEQUEÑOS CUBOS delineados que
+   flotan y giran suavemente sobre su propio eje. Dos capas:
+   · FOCAL: una figura que MUTA por sección (esfera, engranaje, hélice…)
+     y que se ANCLA a la izquierda o derecha según el layout de la
+     sección visible. En secciones "scatter" la figura se deshace y sus
+     cuadrados se dispersan por todo el viewport.
+   · AMBIENTE: cuadrados repartidos en un volumen con PROFUNDIDAD real,
+     por delante y por detrás de la figura (los cercanos se ven grandes,
+     los lejanos pequeños), para que se lea un espacio 3D.
+   Cada cubo se dibuja DELINEADO (solo aristas, trazo grueso): silueta
+   hexagonal isométrica + las 3 aristas visibles hacia el vértice frontal.
+   Orden de pintado: lejos → figura → cerca (painter's algorithm).
+   Interacción (SOLO los cubos de la FIGURA): POP-OUT 3D + BRÚJULA —
+   cerca del cursor cada cubo se DESPEGA hacia la cámara en z real
+   (crece, acelera y hace parallax por perspectiva auténtica, no por
+   escala) y a la vez rota para APUNTAR al cursor, como limaduras de
+   hierro ante un imán: el campo magnético se ve. El ambiente no
+   reacciona; la cámara sí se inclina y panea siguiendo al mouse.
+   Tiempo normalizado por delta-time (misma velocidad en 60/120/144Hz)
+   con render limitado a ~60fps. Motor propio en <canvas>, sin librerías.
+   Paleta oscura + acentos (violeta, azul, ámbar, teal, rosa) sobre claro. */
+---
+
+<canvas id="pointfield" aria-hidden="true"></canvas>
+
+<script>
+  const canvas = document.getElementById('pointfield') as HTMLCanvasElement | null;
+  if (canvas) initPointField(canvas);
+
+  function initPointField(canvas: HTMLCanvasElement) {
+    const ctx = canvas.getContext('2d', { alpha: true })!;
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const coarse = !window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+
+    let W = 0, H = 0, dpr = 1, cx = 0, radius = 1;
+    let builtH = 0;                       // H con el que se construyó el campo
+    // Rangos de índices: [0, NF) focal · [NF, NEAR0) ambiente lejano · [NEAR0, N) ambiente cercano
+    let N = 0, NF = 0, NEAR0 = 0;
+    let hx: Float32Array, hy: Float32Array, hz: Float32Array;
+    let tx: Float32Array, ty: Float32Array, tz: Float32Array;
+    let lift: Float32Array, da: Float32Array;   // elevación hover + ángulo dibujado
+    let col: Uint8Array;
+    let sx: Float32Array, sy: Float32Array, ss: Float32Array;
+    let an: Float32Array, av: Float32Array, szf: Float32Array;
+    let vis: Uint8Array;
+
+    // Paleta: tinta oscura mayoritaria + acentos saturados
+    const COLORS = ['#19171c', '#7a40ed', '#00b2ff', '#ffb829', '#15846e', '#ff5c8a'];
+    const ALPHA  = [0.45, 0.9, 0.88, 0.92, 0.82, 0.82];
+    const WEIGHTS = [0.5, 0.19, 0.11, 0.09, 0.06, 0.05];
+
+    const GA = Math.PI * (3 - Math.sqrt(5));
+    const TAU = Math.PI * 2;
+    const frac = (v: number) => v - Math.floor(v);
+    // Canales pseudoaleatorios IRRACIONALES (los decimales tipo 0.417
+    // tienen período 1000 y generan cuadrados "gemelos" entre i e i+1000)
+    const R1 = 0.7548777, R2 = 0.5698403, R3 = 0.4301597;   // número plástico
+    const R4 = 0.3819660, R5 = 0.2360680, R6 = 0.4142136, R7 = 0.7320508; // 1/φ², √5-2, √2-1, √3-1
+
+    // ─── Figuras focales ────────────────────────────────────────────
+    const shapers: Record<string, (i: number, n: number, o: Float32Array) => void> = {
+      sphere(i, n, o) {
+        const y = 1 - (2 * (i + 0.5)) / n, r = Math.sqrt(Math.max(0, 1 - y * y)), th = GA * i;
+        o[0] = Math.cos(th) * r; o[1] = y; o[2] = Math.sin(th) * r;
+      },
+      wave(i, n, o) {
+        const g = Math.ceil(Math.sqrt(n)), gx = i % g, gz = (i / g) | 0;
+        const x = (gx / (g - 1) - 0.5) * 2, z = (gz / (g - 1) - 0.5) * 2;
+        o[0] = x; o[2] = z; o[1] = 0.32 * Math.sin(x * 3.1) * Math.cos(z * 3.1);
+      },
+      torus(i, n, o) {
+        const u = TAU * (i / n), v = TAU * frac(i * 0.618034), R = 0.72, r = 0.3;
+        o[0] = (R + r * Math.cos(v)) * Math.cos(u); o[1] = r * Math.sin(v);
+        o[2] = (R + r * Math.cos(v)) * Math.sin(u);
+      },
+      helix(i, n, o) {
+        const t = i / n, off = (i % 2) ? 0 : Math.PI, a = t * TAU * 3;
+        o[0] = 0.55 * Math.cos(a + off); o[2] = 0.55 * Math.sin(a + off); o[1] = (t - 0.5) * 1.9;
+      },
+      gear(i, n, o) {
+        if (i / n < 0.22) {
+          const a = GA * i, rr = 0.28 * Math.sqrt(frac(i * R6));
+          o[0] = Math.cos(a) * rr; o[2] = Math.sin(a) * rr; o[1] = (frac(i * R7) - 0.5) * 0.14;
+        } else {
+          const a = TAU * frac(i * 0.618034), tooth = Math.cos(a * 12) > 0.2 ? 0.16 : 0, rr = 0.62 + tooth;
+          o[0] = Math.cos(a) * rr; o[2] = Math.sin(a) * rr; o[1] = (frac(i * R7) - 0.5) * 0.16;
+        }
+      },
+      diamond(i, n, o) {
+        const y = 1 - (2 * (i + 0.5)) / n, a = GA * i, rr = 1 - Math.abs(y), shape = y > 0.35 ? rr * 0.7 : rr;
+        o[0] = Math.cos(a) * shape; o[2] = Math.sin(a) * shape; o[1] = y;
+      },
+      heart(i, n, o) {
+        const t = TAU * frac(i * 0.618034), rr = Math.pow(frac(i * R6), 0.5);
+        const px = 16 * Math.pow(Math.sin(t), 3);
+        const py = 13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t);
+        o[0] = (px / 17) * rr; o[1] = (py / 17) * rr; o[2] = (frac(i * R7) - 0.5) * 0.5 * (1 - rr * 0.6);
+      },
+      galaxy(i, n, o) {
+        const arms = 3, t = Math.pow(i / n, 0.62), a = t * 5.2 * Math.PI + (i % arms) * (TAU / arms) + (frac(i * R6) - 0.5) * 0.6, rr = t * 1.05;
+        o[0] = Math.cos(a) * rr; o[2] = Math.sin(a) * rr; o[1] = (frac(i * R7) - 0.5) * 0.18 * (1 - t);
+      },
+      // Dispersión: los cuadrados de la figura se reparten por TODO el
+      // viewport (en unidades de radio) con profundidad, sin dibujar forma.
+      scatter(i, n, o) {
+        o[0] = (frac(i * 0.618034 + 0.21) - 0.5) * (W / radius) * 1.3;
+        o[1] = (frac(i * R3 + 0.07) - 0.5) * (H / radius) * 1.3;
+        o[2] = (frac(i * R2 + 0.43) - 0.5) * 2.2;
+      },
+    };
+
+    // ─── Config por sección: figura + lado libre donde se muestra ──
+    // anchor: 'left' | 'right' → la figura se ancla a ese lado (la info
+    // va al contrario); contentW = ancho aprox. de la columna de info,
+    // para calcular el hueco real. 'center' + scatter → cuadrados
+    // dispersos de fondo con la información a todo el ancho.
+    type Anchor = 'left' | 'right' | 'center';
+    const SECTIONS: Record<string, { shape: string; anchor: Anchor; contentW?: number }> = {
+      top:         { shape: 'sphere',  anchor: 'right', contentW: 620 },
+      logos:       { shape: 'scatter', anchor: 'center' },
+      servicios:   { shape: 'gear',    anchor: 'left',  contentW: 700 },
+      beneficios:  { shape: 'scatter', anchor: 'center' },
+      proceso:     { shape: 'helix',   anchor: 'right', contentW: 640 },
+      testimonios: { shape: 'scatter', anchor: 'center' },
+      proyectos:   { shape: 'scatter', anchor: 'center' },
+      faq:         { shape: 'galaxy',  anchor: 'left',  contentW: 720 },
+      contacto:    { shape: 'scatter', anchor: 'center' },
+    };
+    let current = 'sphere';
+    let curSection = 'top';
+
+    // Ancla animada de la figura (px) + escala + mezcla figura/dispersión
+    let ax = 0, axT = 0;       // centro X de la figura
+    let cy = 0, cyT = 0;       // centro Y (animado: la barra de URL móvil lo mueve)
+    let rm = 1, rmT = 1;       // multiplicador de radio (para caber en el hueco)
+    let mix = 1, mixT = 1;     // 1 = figura girando · 0 = dispersión meciéndose
+
+    function fillTarget(name: string) {
+      const shaper = shapers[name] || shapers.sphere, tmp = new Float32Array(3);
+      for (let i = 0; i < NF; i++) { shaper(i, NF, tmp); tx[i] = tmp[0]; ty[i] = tmp[1]; tz[i] = tmp[2]; }
+    }
+    function setShape(name: string, snap = false) {
+      if (!shapers[name]) return;
+      if (name === current && !snap) return;
+      current = name; fillTarget(name);
+      if (snap) for (let i = 0; i < NF; i++) { hx[i] = tx[i]; hy[i] = ty[i]; hz[i] = tz[i]; }
+    }
+
+    // Geometría del hueco libre que deja la columna de contenido:
+    // la figura se centra ahí y su radio se limita para que quepa
+    // (en 961–1150px el hueco es angosto; sin esto la figura queda
+    // escondida detrás de las tarjetas).
+    const CONTAINER = 1200, GUTTER = 24;
+    function sideGeom(anchor: Anchor, contentW: number) {
+      const C = Math.min(CONTAINER, W);
+      const left = (W - C) / 2;
+      const gap = Math.min(56, Math.max(24, W * 0.04));
+      const holeW = Math.max(120, C - GUTTER * 2 - contentW - gap);
+      if (anchor === 'left') {
+        const edge = left + GUTTER + holeW;          // el hueco va de 0 a edge
+        return { center: edge / 2, half: edge / 2 };
+      }
+      const start = W - (left + GUTTER + holeW);     // el hueco va de start a W
+      return { center: (start + W) / 2, half: (W - start) / 2 };
+    }
+
+    function applySection(id: string, snap = false) {
+      const cfg = SECTIONS[id];
+      if (!cfg) return;
+      curSection = id;
+      const anchor: Anchor = W <= 960 ? 'center' : cfg.anchor;  // en pantallas chicas todo centrado (mismo corte que el CSS)
+      if (anchor === 'center') {
+        axT = W * 0.5; rmT = 1;
+      } else {
+        const g = sideGeom(anchor, cfg.contentW || 700);
+        axT = g.center;
+        rmT = Math.min(0.86, Math.max(0.4, (g.half * 0.9) / (radius * 1.05)));
+      }
+      mixT = cfg.shape === 'scatter' ? 0 : 1;
+      // sin animación (reduce-motion) la figura cambia con snap
+      setShape(cfg.shape, snap || reduce);
+      if (snap || reduce) { ax = axT; rm = rmT; mix = mixT; }
+      if (reduce) { project(); draw(); }   // estático: re-render puntual por sección
+    }
+
+    function resize() {
+      dpr = Math.min(window.devicePixelRatio || 1, 2);
+      W = window.innerWidth; H = window.innerHeight;
+      canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);
+      canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      cx = W / 2; cy = cyT = H / 2;
+      radius = Math.min(W, H) * (W < 700 ? 0.36 : 0.34);
+    }
+
+    function build() {
+      const small = W < 700;
+      builtH = H;
+      // (los cubos dibujan ~2.6x más geometría que un cuadrado: menos
+      // partículas que en la versión plana para sostener 60fps)
+      NF = small ? 640 : 1100;
+      const NFAR = small ? 340 : 600;    // ambiente detrás de la figura
+      const NNEAR = small ? 190 : 330;   // ambiente delante de la figura
+      NEAR0 = NF + NFAR;
+      N = NF + NFAR + NNEAR;
+      hx = new Float32Array(N); hy = new Float32Array(N); hz = new Float32Array(N);
+      tx = new Float32Array(N); ty = new Float32Array(N); tz = new Float32Array(N);
+      lift = new Float32Array(N); da = new Float32Array(N);
+      col = new Uint8Array(N);
+      sx = new Float32Array(N); sy = new Float32Array(N); ss = new Float32Array(N); vis = new Uint8Array(N);
+      an = new Float32Array(N); av = new Float32Array(N); szf = new Float32Array(N);
+      // colores por pesos + rotación/tamaño propios de cada cuadrado
+      const cum: number[] = []; let acc = 0; for (const w of WEIGHTS) { acc += w; cum.push(acc); }
+      for (let i = 0; i < N; i++) {
+        const r = frac(i * 0.618034 + 0.123); let c = 0; while (c < cum.length - 1 && r > cum[c]) c++; col[i] = c;
+        an[i] = frac(i * R4) * TAU;                    // ángulo inicial
+        av[i] = (frac(i * R5) - 0.5) * 0.012;          // giro lento (±0.006 rad por tick de 60fps)
+        szf[i] = 0.65 + frac(i * R1) * 0.85;           // variedad de tamaños
+      }
+      // ambiente: volumen que llena el viewport con profundidad real.
+      // Lejanos (z > 0, detrás de la figura) y cercanos (z < 0, delante).
+      const spreadX = (W / radius) * 1.35, spreadY = (H / radius) * 1.35;
+      for (let i = NF; i < N; i++) {
+        const j = i - NF;
+        hx[i] = tx[i] = (frac(j * 0.618034 + 0.318) - 0.5) * spreadX;
+        hy[i] = ty[i] = (frac(j * R3 + 0.155) - 0.5) * spreadY;
+        hz[i] = tz[i] = i < NEAR0
+          ? 0.55 + frac(j * R2) * 1.85     // detrás: z ∈ [0.55, 2.4]
+          : -1.35 + frac(j * R2) * 1.0;    // delante: z ∈ [-1.35, -0.35]
+      }
+      setShape(current, true);
+    }
+
+    // ─── Mouse ──────────────────────────────────────────────────────
+    let mx = -9999, my = -9999;
+    let cmx = 0, cmy = 0, cmxT = 0, cmyT = 0;   // inclinación de cámara hacia el mouse (-0.5..0.5)
+    const clearPointer = () => { mx = -9999; my = -9999; cmxT = 0; cmyT = 0; };
+    if (!coarse && !reduce) {
+      window.addEventListener('pointermove', (e) => {
+        mx = e.clientX; my = e.clientY;
+        cmxT = mx / W - 0.5; cmyT = my / H - 0.5;
+      }, { passive: true });
+      // pointerleave no llega a window (no burbujea): se escucha en <html>,
+      // y blur cubre el cambio de ventana — si no, el efecto queda
+      // "pegado" en el borde al sacar el cursor.
+      document.documentElement.addEventListener('pointerleave', clearPointer);
+      window.addEventListener('blur', clearPointer);
+    }
+
+    function observeSections() {
+      const secs = Object.keys(SECTIONS).map((id) => document.getElementById(id)).filter(Boolean) as HTMLElement[];
+      if (!('IntersectionObserver' in window) || !secs.length) return;
+      const io = new IntersectionObserver((entries) => {
+        for (const e of entries) if (e.isIntersecting) applySection((e.target as HTMLElement).id);
+      }, { rootMargin: '-48% 0px -48% 0px', threshold: 0 });
+      secs.forEach((s) => io.observe(s));
+    }
+
+    // ─── Render ─────────────────────────────────────────────────────
+    const FOCAL = 2.4, CAM = 2.7;
+    const PITCH = -0.16;
+    let raf = 0, running = true, tick = 0;
+
+    // fr = frames equivalentes a 60fps transcurridos desde el último
+    // render (delta-time): la velocidad no depende del refresh rate.
+    function project(fr = 1) {
+      tick += fr;
+      // Suavizado de ancla / centro / escala / mezcla figura-dispersión
+      const ka = 1 - Math.pow(0.945, fr);   // ≈0.055 por frame a 60fps
+      const km = 1 - Math.pow(0.955, fr);   // ≈0.045
+      const ks = 1 - Math.pow(0.95, fr);    // ≈0.05 (morph de figura)
+      const kl = 1 - Math.pow(0.87, fr);    // ≈0.13 (subida/bajada del pop-out)
+      ax += (axT - ax) * ka; cy += (cyT - cy) * ka; rm += (rmT - rm) * ka; mix += (mixT - mix) * km;
+      // Cámara con parallax: se inclina Y SE DESPLAZA hacia donde va el
+      // mouse (con retardo suave, como si "siguiera" al cursor). El paneo
+      // se escala por profundidad (p) → los cubos cercanos se mueven más,
+      // los lejanos menos y la figura también viaja: cámara física real.
+      const kc = 1 - Math.pow(0.92, fr);
+      cmx += (cmxT - cmx) * kc; cmy += (cmyT - cmy) * kc;
+      const camYaw = cmx * 0.16, camPit = cmy * 0.1;
+      const panX = -cmx * 85, panY = -cmy * 60;
+      // La FIGURA no rota por sí sola: mantiene su orientación (flota y
+      // cada cubo gira sobre su eje); solo la cámara la inclina. El
+      // VAIVÉN oscilante mece únicamente al ambiente/dispersión.
+      const yawW = Math.sin(tick * 0.0011) * 0.09 + camYaw;
+      const pitW = PITCH + Math.sin(tick * 0.0007) * 0.03 + camPit;
+      const cyS = Math.cos(camYaw), syS = Math.sin(camYaw), cpS = Math.cos(PITCH + camPit), spS = Math.sin(PITCH + camPit);
+      const cyW = Math.cos(yawW), syW = Math.sin(yawW), cpW = Math.cos(pitW), spW = Math.sin(pitW);
+      const RF = radius * rm, RA = radius;
+      const m = mix, im = 1 - m;
+      for (let i = 0; i < N; i++) {
+        const focal = i < NF;
+        if (!reduce && focal) {
+          hx[i] += (tx[i] - hx[i]) * ks; hy[i] += (ty[i] - hy[i]) * ks; hz[i] += (tz[i] - hz[i]) * ks;
+        }
+        let x = hx[i], y = hy[i], z = hz[i];
+        if (!reduce) {
+          // flotación: sutil en la figura, amplia en ambiente/dispersión
+          const w = i * 0.7, fa = focal ? 0.012 + im * 0.033 : 0.045;
+          y += Math.sin(tick * 0.005 + w) * fa; x += Math.cos(tick * 0.004 + w) * fa;
+        }
+        let x1: number, y1: number, z2: number, ctrX: number, R: number;
+        if (focal) {
+          // mezcla de POSICIONES giro↔vaivén (evita saltos al transicionar)
+          let xs = 0, ys = 0, zs = 0;
+          if (m > 0.001) {
+            const xr = x * cyS + z * syS, zr = -x * syS + z * cyS;
+            xs = xr; ys = y * cpS - zr * spS; zs = y * spS + zr * cpS;
+          }
+          if (m < 0.999) {
+            const xr = x * cyW + z * syW, zr = -x * syW + z * cyW;
+            const yw = y * cpW - zr * spW, zw = y * spW + zr * cpW;
+            xs = xs * m + xr * im; ys = ys * m + yw * im; zs = zs * m + zw * im;
+          }
+          x1 = xs; y1 = ys; z2 = zs; ctrX = ax; R = RF;
+        } else {
+          const xr = x * cyW + z * syW, zr = -x * syW + z * cyW;
+          x1 = xr; y1 = y * cpW - zr * spW; z2 = y * spW + zr * cpW;
+          ctrX = cx; R = RA;
+        }
+        let dz = z2 + CAM;
+        if (dz <= 0.05) { vis[i] = 0; continue; }
+        let p = FOCAL / dz;
+        let px = ctrX + x1 * R * p + panX * p, py = cy + y1 * R * p + panY * p;
+        let a = an[i] + tick * av[i];   // giro libre del cubo
+        if (focal) {
+          // ── POP-OUT 3D + BRÚJULA (solo figura) ──────────────────
+          // cercanía al cursor con falloff suave (smoothstep)
+          let qe = 0;
+          if (mx > -9998) {
+            const ddx = px - mx, ddy = py - my, d2 = ddx * ddx + ddy * ddy, RR = 200;
+            if (d2 < RR * RR) { const q = 1 - Math.sqrt(d2) / RR; qe = q * q * (3 - 2 * q); }
+          }
+          // elevación suavizada por cubo: sube y baja sin saltos
+          lift[i] += (qe * 1.3 - lift[i]) * kl;
+          if (lift[i] > 0.001) {
+            // el cubo se ACERCA a la cámara: crece, acelera y hace
+            // parallax por perspectiva real (no por escala)
+            dz = Math.max(0.6, dz - lift[i]);
+            p = FOCAL / dz;
+            px = ctrX + x1 * R * p + panX * p; py = cy + y1 * R * p + panY * p;
+            // brújula: rota para APUNTAR al cursor (limaduras de hierro);
+            // el peso de alineación es la propia elevación normalizada
+            const w = lift[i] / 1.3;
+            const aim = Math.atan2(my - py, mx - px);
+            const dAng = (((aim - a) % TAU) + TAU + Math.PI) % TAU - Math.PI;
+            a += dAng * w;
+          }
+        }
+        da[i] = a;
+        sx[i] = px; sy[i] = py;
+        // semi-lado del cubo: perspectiva (ya incluye el pop-out) + variedad
+        const base = focal ? 2.8 : 3.2;
+        ss[i] = Math.min(18, Math.max(0.9, base * szf[i] * p));
+        vis[i] = 1;
+      }
+    }
+
+    // Dibuja un rango como CUBOS isométricos DELINEADOS que rotan sobre
+    // su eje vertical: silueta hexagonal + las 3 aristas visibles hacia
+    // el vértice frontal (las ocultas se omiten → se lee como cubo
+    // sólido, no como alambre). Agrupados por color en un solo path.
+    // aMul atenúa el ambiente; lw = grosor del trazo.
+    const CB = Math.cos(0.45), SB = Math.sin(0.45);   // inclinación fija: se ve la cara superior
+    function drawRange(lo: number, hi: number, aMul: number, lw: number) {
+      ctx.lineWidth = lw;
+      for (let c = 0; c < COLORS.length; c++) {
+        ctx.strokeStyle = COLORS[c]; ctx.globalAlpha = ALPHA[c] * aMul;
+        ctx.beginPath();
+        let any = false;
+        for (let i = lo; i < hi; i++) {
+          if (!vis[i] || col[i] !== c) continue;
+          const h = ss[i], a = da[i];   // ángulo resuelto en project (giro libre o brújula)
+          const ca = Math.cos(a), sa = Math.sin(a);
+          // proyección 2D de los ejes locales del cubo (medio lado h):
+          // X→(exx,exy) · Y→(0,eyy) · Z→(ezx,ezy)
+          const exx = ca * h, exy = sa * SB * h;
+          const eyy = CB * h;
+          const ezx = sa * h, ezy = -ca * SB * h;
+          // signos del vértice frontal (el más cercano a cámara)
+          const s1 = sa >= 0 ? 1 : -1, s3 = ca >= 0 ? -1 : 1;
+          const px1 = s1 * exx, qx1 = s1 * exy, pz1 = s3 * ezx, qz1 = s3 * ezy;
+          const x = sx[i], y = sy[i];
+          // silueta hexagonal (6 vértices en ciclo)
+          ctx.moveTo(x - px1 + pz1, y - qx1 - eyy + qz1);
+          ctx.lineTo(x - px1 + pz1, y - qx1 + eyy + qz1);
+          ctx.lineTo(x + px1 + pz1, y + qx1 + eyy + qz1);
+          ctx.lineTo(x + px1 - pz1, y + qx1 + eyy - qz1);
+          ctx.lineTo(x + px1 - pz1, y + qx1 - eyy - qz1);
+          ctx.lineTo(x - px1 - pz1, y - qx1 - eyy - qz1);
+          ctx.closePath();
+          // 3 aristas visibles: del vértice frontal a sus vecinos
+          const fx = x + px1 + pz1, fy = y + qx1 - eyy + qz1;
+          ctx.moveTo(fx, fy); ctx.lineTo(x - px1 + pz1, y - qx1 - eyy + qz1);
+          ctx.moveTo(fx, fy); ctx.lineTo(x + px1 + pz1, y + qx1 + eyy + qz1);
+          ctx.moveTo(fx, fy); ctx.lineTo(x + px1 - pz1, y + qx1 - eyy - qz1);
+          any = true;
+        }
+        if (any) ctx.stroke();
+      }
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, W, H);
+      drawRange(NF, NEAR0, 0.55, 1.4);   // ambiente lejano (detrás de la figura)
+      drawRange(0, NF, 1, 2);            // figura / dispersión focal
+      drawRange(NEAR0, N, 0.6, 2.4);     // ambiente cercano (delante de la figura)
+      ctx.globalAlpha = 1;
+    }
+
+    // Bucle con delta-time + límite ~60fps (en 120/144Hz saltamos frames:
+    // misma velocidad visual, la mitad de CPU).
+    let lastDraw = 0;
+    function loop(now?: number) {
+      if (!running) return;
+      raf = requestAnimationFrame(loop);
+      const t = now ?? performance.now();
+      if (t - lastDraw < 15.5) return;
+      const fr = lastDraw ? Math.min(3, (t - lastDraw) / 16.667) : 1;
+      lastDraw = t;
+      project(fr); draw();
+    }
+
+    // El resize vive FUERA del branch de animación: con reduce-motion
+    // también hay que reconstruir al rotar el teléfono o redimensionar.
+    function onResize() {
+      const nw = window.innerWidth, nh = window.innerHeight;
+      const ndpr = Math.min(window.devicePixelRatio || 1, 2);
+      // El fast path exige mismo dpr (mover la ventana a un monitor con
+      // otro escalado debe reconstruir) y tolera menos delta en landscape,
+      // donde radius depende de H (la barra de URL móvil ronda 56-100px).
+      const bound = nw < nh ? 180 : 80;
+      if (nw === W && ndpr === dpr && Math.abs(nh - builtH) < bound) {
+        // Solo cambió la altura (barra de URL móvil / teclado): ajustar
+        // el lienzo y animar el centro SIN regenerar partículas ni snaps.
+        H = nh;
+        canvas.height = Math.round(H * dpr);
+        canvas.style.height = H + 'px';
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        cyT = H / 2;
+        if (reduce) { cy = cyT; project(); draw(); }
+        return;
+      }
+      resize(); build(); applySection(curSection, true);
+    }
+
+    resize(); build(); applySection('top', true); observeSections();
+
+    let rt: number;
+    window.addEventListener('resize', () => {
+      clearTimeout(rt); rt = window.setTimeout(onResize, 180);
+    }, { passive: true });
+
+    if (reduce) { project(); draw(); }
+    else {
+      loop();
+      document.addEventListener('visibilitychange', () => {
+        running = !document.hidden;
+        if (running && !raf) { lastDraw = 0; loop(); }
+        else if (!running && raf) { cancelAnimationFrame(raf); raf = 0; }
+      });
+    }
+  }
+</script>
+
+<style>
+  #pointfield {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    display: block;
+  }
+</style>

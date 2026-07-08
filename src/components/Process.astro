@@ -8,55 +8,70 @@ const badgeVariants = ['violet', 'blue', 'volt', 'violet', 'blue'];
 
 <section id="proceso" class="section proceso" aria-labelledby="proceso-title">
   <div class="container">
-    <div class="section-head section-head--center reveal">
-      <span class="eyebrow eyebrow--blue">{PROCESS.eyebrow}</span>
-      <h2 class="h2 proceso__title" id="proceso-title">{PROCESS.title}</h2>
-      <p class="lead proceso__lead">{PROCESS.subtitle}</p>
-    </div>
+    <!-- Info a la IZQUIERDA; la hélice de cuadrados gira en el hueco derecho -->
+    <div class="proceso__layout">
+      <div class="proceso__content">
+        <div class="section-head reveal">
+          <span class="eyebrow eyebrow--blue">{PROCESS.eyebrow}</span>
+          <h2 class="h2 proceso__title" id="proceso-title">{PROCESS.title}</h2>
+          <p class="lead proceso__lead">{PROCESS.subtitle}</p>
+        </div>
 
-    <ol class="proceso__steps">
-      {PROCESS.steps.map((step, i) => (
-        <li class="proceso__step reveal" style={`--reveal-delay:${(0.08 * i).toFixed(2)}s`}>
-          <span
-            class={`proceso__badge proceso__badge--${badgeVariants[i % badgeVariants.length]}`}
-          >
-            {step.num}
-          </span>
-          <div class="proceso__body">
-            <h3 class="h3 proceso__step-title">{step.title}</h3>
-            <p class="text-soft proceso__desc">{step.desc}</p>
-          </div>
-        </li>
-      ))}
-    </ol>
+        <ol class="proceso__steps">
+          {PROCESS.steps.map((step, i) => (
+            <li class="proceso__step reveal" style={`--reveal-delay:${(0.08 * i).toFixed(2)}s`}>
+              <span
+                class={`proceso__badge proceso__badge--${badgeVariants[i % badgeVariants.length]}`}
+              >
+                {step.num}
+              </span>
+              <div class="proceso__body">
+                <h3 class="h3 proceso__step-title">{step.title}</h3>
+                <p class="text-soft proceso__desc">{step.desc}</p>
+              </div>
+            </li>
+          ))}
+        </ol>
+      </div>
+
+      <div class="proceso__space" aria-hidden="true"></div>
+    </div>
   </div>
 </section>
 
 <style>
-  /* Espaciado interno de la cabecera centrada */
+  /* Dos columnas: contenido a la izquierda, hueco para la hélice a la derecha */
+  .proceso__layout {
+    display: grid;
+    grid-template-columns: minmax(0, 640px) minmax(0, 1fr);
+    gap: clamp(24px, 4vw, 56px);
+    align-items: start;
+  }
+
+  /* Espaciado interno de la cabecera */
   .proceso :global(.eyebrow) { margin-bottom: 18px; }
   .proceso__title { margin-bottom: 16px; }
-  .proceso__lead { max-width: 58ch; margin-inline: auto; }
+  .proceso__lead { max-width: 52ch; }
 
-  /* ── Fila de pasos ──────────────────────────────────────────── */
+  /* ── Columna de pasos (riel vertical) ───────────────────────── */
   .proceso__steps {
     position: relative;
     display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    gap: 22px;
-    margin-top: clamp(28px, 4.5vw, 48px);
+    grid-template-columns: 1fr;
+    gap: 26px;
+    margin-top: clamp(8px, 1.5vw, 16px);
   }
 
-  /* Riel punteado detrás de los badges (horizontal en desktop) */
+  /* Riel punteado vertical detrás de los badges */
   .proceso__steps::before {
     content: '';
     position: absolute;
     top: 28px;               /* centro del badge (56px / 2) */
-    left: 10%;
-    right: 10%;
-    height: 3px;
-    background-image: linear-gradient(90deg, var(--lavender) 0 58%, transparent 0);
-    background-size: 16px 100%;
+    bottom: 28px;
+    left: 27px;
+    width: 3px;
+    background-image: linear-gradient(180deg, var(--lavender) 0 58%, transparent 0);
+    background-size: 100% 16px;
     z-index: 0;
   }
 
@@ -64,10 +79,10 @@ const badgeVariants = ['violet', 'blue', 'volt', 'violet', 'blue'];
     position: relative;
     z-index: 1;
     display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    gap: 18px;
+    flex-direction: row;
+    align-items: flex-start;
+    text-align: left;
+    gap: 20px;
   }
 
   /* Badge del número (cuadrado redondeado, 56px) */
@@ -110,50 +125,25 @@ const badgeVariants = ['violet', 'blue', 'volt', 'violet', 'blue'];
     box-shadow: 0 0 0 7px var(--bg), var(--shadow-violet);
   }
 
-  .proceso__step-title { margin-bottom: 8px; }
+  .proceso__step-title { margin-top: 6px; margin-bottom: 8px; }
   .proceso__desc {
     font-size: 0.96rem;
     line-height: 1.5;
-    max-width: 24ch;
-    margin-inline: auto;
+    max-width: 48ch;
   }
 
-  /* ── Tablet ─────────────────────────────────────────────────── */
+  /* ── Pantallas medianas: contenido a todo el ancho ──────────── */
   @media (max-width: 960px) {
-    .proceso__steps { gap: 16px; }
-    .proceso__steps::before { left: 10%; right: 10%; }
-    .proceso__badge { width: 52px; height: 52px; font-size: 1.25rem; }
-    .proceso__steps::before { top: 26px; }
-    .proceso__desc { font-size: 0.9rem; }
+    .proceso__layout { grid-template-columns: 1fr; }
+    .proceso__space { display: none; }
   }
 
-  /* ── Móvil: apilado vertical con riel a la izquierda ────────── */
+  /* ── Móvil: badges algo menores ─────────────────────────────── */
   @media (max-width: 620px) {
-    .proceso__steps {
-      grid-template-columns: 1fr;
-      gap: 26px;
-      max-width: 440px;
-      margin-inline: auto;
-    }
-    .proceso__steps::before {
-      top: 28px;
-      bottom: 28px;
-      left: 26px;            /* centro del badge (52px / 2) */
-      right: auto;
-      width: 3px;
-      height: auto;
-      background-image: linear-gradient(180deg, var(--lavender) 0 58%, transparent 0);
-      background-size: 100% 16px;
-    }
-    .proceso__step {
-      flex-direction: row;
-      align-items: flex-start;
-      text-align: left;
-      gap: 18px;
-    }
+    .proceso__steps { max-width: 440px; }
+    .proceso__steps::before { left: 25px; }   /* centro del badge (52px / 2) */
     .proceso__badge { width: 52px; height: 52px; font-size: 1.25rem; }
-    .proceso__step-title { margin-top: 6px; }
-    .proceso__desc { max-width: none; margin-inline: 0; }
+    .proceso__step { gap: 18px; }
   }
 
   /* ── Accesibilidad: reducir movimiento ──────────────────────── */

@@ -22,27 +22,34 @@ const chipClass: Record<string, string> = {
   <div class="svc__glow" aria-hidden="true"></div>
 
   <div class="container">
-    <div class="section-head section-head--center">
-      <span class="eyebrow reveal">{SERVICES.eyebrow}</span>
-      <h2 class="h2 svc__title reveal" style="--reveal-delay:.06s">{SERVICES.title}</h2>
-      <p class="lead svc__lead reveal" style="--reveal-delay:.12s">{SERVICES.subtitle}</p>
-    </div>
+    <!-- Info a la DERECHA; el engranaje de cuadrados gira en el hueco izquierdo -->
+    <div class="svc__layout">
+      <div class="svc__space" aria-hidden="true"></div>
 
-    <div class="grid grid-3 svc__grid">
-      {SERVICES.items.map((item, i) => (
-        <article
-          class={`card ${cardClass[item.variant] ?? ''} tilt3d svc__card svc__card--${item.variant} reveal-op`}
-          style={`--reveal-delay:${0.08 * i + 0.1}s`}
-          data-tilt
-        >
-          <span class="tilt3d__glare" aria-hidden="true"></span>
-          <span class={chipClass[item.variant] ?? 'icon-chip'} aria-hidden="true">
-            <Icon name={`lucide:${item.icon}`} />
-          </span>
-          <h3 class="h3 svc__card-title">{item.title}</h3>
-          <p class="text-soft svc__card-desc">{item.description}</p>
-        </article>
-      ))}
+      <div class="svc__content">
+        <div class="section-head svc__head">
+          <span class="eyebrow reveal">{SERVICES.eyebrow}</span>
+          <h2 class="h2 svc__title reveal" style="--reveal-delay:.06s">{SERVICES.title}</h2>
+          <p class="lead svc__lead reveal" style="--reveal-delay:.12s">{SERVICES.subtitle}</p>
+        </div>
+
+        <div class="grid grid-2 svc__grid">
+          {SERVICES.items.map((item, i) => (
+            <article
+              class={`card ${cardClass[item.variant] ?? ''} tilt3d svc__card svc__card--${item.variant} reveal-op`}
+              style={`--reveal-delay:${0.08 * i + 0.1}s`}
+              data-tilt
+            >
+              <span class="tilt3d__glare" aria-hidden="true"></span>
+              <span class={chipClass[item.variant] ?? 'icon-chip'} aria-hidden="true">
+                <Icon name={`lucide:${item.icon}`} />
+              </span>
+              <h3 class="h3 svc__card-title">{item.title}</h3>
+              <p class="text-soft svc__card-desc">{item.description}</p>
+            </article>
+          ))}
+        </div>
+      </div>
     </div>
   </div>
 </section>
@@ -64,18 +71,28 @@ const chipClass: Record<string, string> = {
       radial-gradient(600px 420px at 4% 96%, rgba(0, 178, 255, 0.07), transparent 70%);
   }
 
-  .svc__title { max-width: 16ch; margin-inline: auto; margin-top: 18px; }
-  .svc__lead { max-width: 58ch; margin-inline: auto; margin-top: 20px; }
+  /* Dos columnas: hueco para la figura a la izquierda, contenido a la derecha */
+  .svc__layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 700px);
+    gap: clamp(24px, 4vw, 56px);
+    align-items: center;
+  }
 
-  .svc__grid { gap: 24px; }
+  .svc__head { margin-bottom: clamp(28px, 3.5vw, 44px); }
+  .svc__title { max-width: 16ch; margin-top: 18px; }
+  .svc__lead { max-width: 48ch; margin-top: 20px; }
+
+  .svc__grid { gap: 18px; }
 
   /* Tarjeta de servicio: contenido apilado y acolchado */
   .svc__card {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    gap: 18px;
-    min-height: 246px;
+    gap: 16px;
+    min-height: 210px;
+    padding: 26px;
     transition: transform var(--t-base), box-shadow var(--t-base), rotate var(--t-base), opacity 0.5s var(--ease-out);
   }
 
@@ -95,8 +112,12 @@ const chipClass: Record<string, string> = {
   .svc__card--blue .svc__card-desc,
   .svc__card--volt .svc__card-desc { color: rgba(25, 23, 28, 0.74); }
 
+  /* En pantallas medianas el contenido ocupa todo el ancho
+     (la figura pasa a modo centrado detrás del contenido). */
   @media (max-width: 960px) {
-    .svc__card { min-height: 220px; }
+    .svc__layout { grid-template-columns: 1fr; }
+    .svc__space { display: none; }
+    .svc__card { min-height: 200px; }
   }
 
   /* En una sola columna, las rotaciones se ven raras: las anulamos */

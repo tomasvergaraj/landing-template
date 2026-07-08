@@ -2,12 +2,10 @@
 import { Icon } from 'astro-icon/components';
 import { HERO, waLink } from '../config';
 import WhatsAppIcon from './WhatsAppIcon.astro';
-import Warp from './Warp.astro';
 ---
 
 <section id="top" class="hero">
   <div class="hero__glow" aria-hidden="true"></div>
-  <Warp variant="light" class="hero__warp" />
 
   <!-- Tarjetas flotantes decorativas (kinetic playground) -->
   <span class="hero__deco hero__deco--a float" aria-hidden="true">
@@ -56,11 +54,13 @@ import Warp from './Warp.astro';
 </section>
 
 <style>
+  /* Info a la IZQUIERDA; la esfera de cuadrados vive en el hueco derecho
+     (el ancla del PointField se mueve a la derecha en esta sección). */
   .hero {
     position: relative;
     padding-top: clamp(140px, 20vh, 210px);
     padding-bottom: clamp(60px, 8vw, 110px);
-    text-align: center;
+    text-align: left;
     overflow: clip;
   }
 
@@ -85,15 +85,17 @@ import Warp from './Warp.astro';
     mask-image: radial-gradient(58% 58% at 50% 46%, transparent 34%, #000 76%);
   }
 
-  .hero__inner { position: relative; z-index: 2; display: flex; flex-direction: column; align-items: center; }
+  .hero__inner { position: relative; z-index: 2; display: flex; flex-direction: column; align-items: flex-start; }
 
+  /* La columna de contenido se acota (~600px) para dejar aire a la esfera */
   .hero__title {
-    max-width: 15ch;
+    max-width: 14ch;
+    font-size: clamp(2.9rem, 5.6vw, 4.8rem);
     margin-top: 26px;
   }
 
   .hero__lead {
-    max-width: 56ch;
+    max-width: 44ch;
     margin-top: 26px;
   }
 
@@ -101,7 +103,7 @@ import Warp from './Warp.astro';
     display: flex;
     flex-wrap: wrap;
     gap: 14px;
-    justify-content: center;
+    justify-content: flex-start;
     margin-top: 38px;
   }
 
@@ -110,7 +112,7 @@ import Warp from './Warp.astro';
     display: flex;
     flex-wrap: wrap;
     gap: 18px;
-    justify-content: center;
+    justify-content: flex-start;
     margin-top: 56px;
   }
   .hero__stat {
@@ -158,17 +160,32 @@ import Warp from './Warp.astro';
     box-shadow: var(--shadow-md);
   }
   .hero__deco :global(svg) { width: 30px; height: 30px; }
-  .hero__deco--a { top: 20%; left: 8%; width: 74px; height: 74px; background: var(--violet); color: #fff; rotate: -10deg; }
-  .hero__deco--b { top: 16%; right: 9%; width: 66px; height: 66px; background: var(--volt); color: var(--ink); rotate: 8deg; }
-  .hero__deco--c { top: 54%; left: 12%; width: 64px; height: 64px; background: var(--blue); color: #fff; rotate: 6deg; border-radius: 50%; }
-  .hero__deco--d { top: 58%; right: 11%; width: 70px; height: 70px; background: var(--white); color: var(--violet); rotate: -6deg; }
+  /* a/c en el borde izquierdo (fuera de la columna de texto);
+     b/d flotan sobre el campo de cuadrados de la derecha */
+  .hero__deco--a { top: 18%; left: 2%; width: 74px; height: 74px; background: var(--violet); color: #fff; rotate: -10deg; }
+  .hero__deco--b { top: 14%; right: 7%; width: 66px; height: 66px; background: var(--volt); color: var(--ink); rotate: 8deg; }
+  .hero__deco--c { top: 60%; left: 3%; width: 64px; height: 64px; background: var(--blue); color: #fff; rotate: 6deg; border-radius: 50%; }
+  .hero__deco--d { top: 62%; right: 22%; width: 70px; height: 70px; background: var(--white); color: var(--violet); rotate: -6deg; }
 
   @keyframes floaty { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-16px); } }
   .float  { animation: floaty 6s var(--ease-out) infinite; }
   .float2 { animation: floaty 7.5s var(--ease-out) -2s infinite; }
   .float3 { animation: floaty 5.5s var(--ease-out) -1s infinite; }
 
+  /* Bajo 1400px el margen izquierdo se estrecha y a/c pisarían el texto */
+  @media (max-width: 1400px) { .hero__deco--a, .hero__deco--c { display: none; } }
   @media (max-width: 1050px) { .hero__deco { display: none; } }
+
+  /* En pantallas medianas la figura vuelve al centro (detrás del
+     contenido), así que el hero recupera su composición centrada. */
+  @media (max-width: 960px) {
+    .hero { text-align: center; }
+    .hero__inner { align-items: center; }
+    .hero__title { max-width: 15ch; font-size: clamp(2.9rem, 7vw, 6rem); }
+    .hero__lead { max-width: 56ch; }
+    .hero__cta, .hero__stats { justify-content: center; }
+  }
+
   @media (max-width: 620px) {
     .hero__stat { min-width: 0; flex: 1 1 44%; padding: 18px; }
     .hero__stat-num { font-size: 1.9rem; }

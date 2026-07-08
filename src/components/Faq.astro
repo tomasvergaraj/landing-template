@@ -5,40 +5,60 @@ import { FAQ } from '../config';
 
 <section id="faq" class="faq section" aria-labelledby="faq-title">
   <div class="container">
-    <div class="section-head section-head--center reveal">
-      <span class="eyebrow eyebrow--blue">{FAQ.eyebrow}</span>
-      <h2 id="faq-title" class="h2 faq__title">{FAQ.title}</h2>
-      <p class="lead faq__lead">{FAQ.subtitle}</p>
-    </div>
+    <!-- Info a la DERECHA; la galaxia de cuadrados gira en el hueco izquierdo -->
+    <div class="faq__layout">
+      <div class="faq__space" aria-hidden="true"></div>
 
-    <div class="faq__list">
-      {FAQ.items.map((item, i) => (
-        <details class="faq__item reveal" style={`--reveal-delay:${0.06 * i}s`}>
-          <summary class="faq__q">
-            <span class="faq__q-text">{item.q}</span>
-            <span class="faq__icon" aria-hidden="true">
-              <Icon name="lucide:plus" />
-            </span>
-          </summary>
-          <div class="faq__a">
-            <p class="text-soft">{item.a}</p>
-          </div>
-        </details>
-      ))}
+      <div class="faq__content">
+        <div class="section-head reveal">
+          <span class="eyebrow eyebrow--blue">{FAQ.eyebrow}</span>
+          <h2 id="faq-title" class="h2 faq__title">{FAQ.title}</h2>
+          <p class="lead faq__lead">{FAQ.subtitle}</p>
+        </div>
+
+        <div class="faq__list">
+          {FAQ.items.map((item, i) => (
+            <details class="faq__item reveal" style={`--reveal-delay:${0.06 * i}s`}>
+              <summary class="faq__q">
+                <span class="faq__q-text">{item.q}</span>
+                <span class="faq__icon" aria-hidden="true">
+                  <Icon name="lucide:plus" />
+                </span>
+              </summary>
+              <div class="faq__a">
+                <p class="text-soft">{item.a}</p>
+              </div>
+            </details>
+          ))}
+        </div>
+      </div>
     </div>
   </div>
 </section>
 
 <style>
+  /* Dos columnas: hueco para la galaxia a la izquierda, contenido a la derecha */
+  .faq__layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 720px);
+    gap: clamp(24px, 4vw, 56px);
+    align-items: center;
+  }
+
+  .faq__content .section-head { margin-bottom: clamp(28px, 3.5vw, 44px); }
   .faq__title { margin-top: 18px; }
-  .faq__lead { margin-top: 18px; }
+  .faq__lead { margin-top: 18px; max-width: 50ch; }
 
   .faq__list {
-    max-width: 760px;
-    margin-inline: auto;
     display: flex;
     flex-direction: column;
     gap: 12px;
+  }
+
+  /* En pantallas medianas el contenido ocupa todo el ancho */
+  @media (max-width: 960px) {
+    .faq__layout { grid-template-columns: 1fr; }
+    .faq__space { display: none; }
   }
 
   /* Contenedor tarjeta blanca acolchada por cada pregunta */
